@@ -1,0 +1,141 @@
+{% extends "lims/base.html" %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.8/css/rowReorder.dataTables.min.css"/>
+<link rel="stylesheet" type="text/css" source="{% static 'lims/data-tables/css/editor.dataTables.min.css' %}"/>
+<link rel="stylesheet" type="text/css" source="{% static 'lims/data-tables/css/editor.bootstrap5.min.css' %}"/>
+
+{% endblock head %}
+
+{% block content %}
+{% csrf_token %}
+<h1 class="border-bottom">Samples for Collection Event: {{ event.name }} </h1>
+<div class="d-grid gap-0 d-md-block mt-2">
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:event_samples_excel' event.id %}" role="button">Download Form <span data-feather="clipboard"></span></a>
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:upload_samples' event.id %}" role="button">Upload Form <span data-feather="upload"></span></a>
+
+</div>
+    
+    <table id="event_sample_table" class="display table table-hover" align="center" style="width:100%"> 
+        <thead>
+            <tr>
+                <th>Sample ID</th>
+                <th>Collection Event</th>
+                <th>Location</th>
+                <th>Neighborhood</th>
+                <th>Collection Status</th>
+                <th>Sample Type</th>
+                <th>Sample Source</th>
+                <th>Subject Given Name</th>
+                <th>Subject Family Name</th>
+                <th>Created On</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sample in samples %}
+                <tr>
+                    <td>
+                        <a class="table-link" href="{% url 'lims:sample_detail' sample.id %}">{{ sample.name }}</a>
+                    </td>
+                    <td>
+                        <a class="table-link" href="{% url 'lims:event_detail' sample.collection_event.id %}">{{ sample.collection_event.name }}</a>
+                    </td>
+                    <td>
+                        <a class="table-link" href="{% url 'lims:location_detail' sample.collection_event.location.id %}">{{ sample.collection_event.location.name }}</a>
+                    </td>
+                    <td>
+                        <a class="table-link" href="{% url 'lims:neighborhood_detail' sample.collection_event.location.neighborhood.id %}">{{ sample.collection_event.location.neighborhood.name }}</a>
+                    </td>
+                    <td>
+                        {% if sample.collection_status == 'Collected' %}
+                            <span class="badge bg-success">{{ sample.collection_status }}</span>
+                        {% elif sample.collection_status == 'Pending' %}
+                            <span class="badge bg-secondary">{{ sample.collection_status }}</span>
+                        {% elif sample.collection_status == 'Not Collected' %}
+                            <span class="badge bg-warning">{{ sample.collection_status }}</span>
+                        {% elif sample.collection_status == 'Refused' %}
+                            <span class="badge bg-danger">{{ sample.collection_status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ sample.sample_type |default_if_none:''}}
+                    </td>
+                    <td>
+                        {{ sample.source |default_if_none:''}}
+                    </td>
+                    <td>
+                        {% if sample.subject %}
+                            <a class="table-link" href="{% url 'lims:subject_detail' sample.subject.id %}">{{ sample.subject.given_name |default_if_none:''}}</a>
+                        {% else %}
+                        
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if sample.subject %}
+                            <a class="table-link" href="{% url 'lims:subject_detail' sample.subject.id %}">{{ sample.subject.family_name|default_if_none:'' }}</a>
+                        {% else %}
+                        
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ sample.created_on }}
+                    </td>
+                </tr>
+
+            {% endfor %}
+        </tbody>
+        
+    </table>
+
+{% endblock content %}
+
+{% block js %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/dataTables.editor.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/editor.bootstrap5.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/editor.dataTables.min.js' %}"></script>
+
+<script>
+
+$(document).ready( function () {
+    $('#event_sample_table').DataTable({
+    rowReorder: false,
+    fixedHeader: true,
+    order: [],
+    stateSave: true,
+    aLengthMenu: [
+            [25, 50, 100, 200, -1],
+            [25, 50, 100, 200, "All"]
+            ],
+    iDisplayLength: 25,
+    dom: 'B<"clear">lfrtip',
+    buttons: {
+        name: 'primary',
+        buttons: [ 
+        {
+          extend: 'copy',
+          title: 'Event Sample List'
+        },
+        {
+          extend: 'pdf',
+          title: 'Event Sample List'
+        },
+        {
+          extend: 'csv',
+          title: 'Event Sample List'
+        },
+        {
+          extend: 'excel',
+          title: 'Event Sample List'
+        }]
+        }}
+    );
+} );
+</script>
+{% endblock js %}

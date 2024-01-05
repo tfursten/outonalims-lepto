@@ -1,0 +1,18 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<div class="card">
+    <h1 class="card-header">Neighborhood: {{ neighborhood.name }}</h1>
+    <div class="card-body">
+      <p class="card-text"><strong>Description:</strong> {{ neighborhood.description }}</p>
+      <p class="card-text"><strong>Created:</strong> {{ neighborhood.created_on }}</p>     
+    </div>
+</div>
+<div class="d-grid gap-0 d-md-block mt-2">
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:edit_neighborhood' neighborhood.id %}" role="button">Edit <span data-feather="edit"></span></a>
+    <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:new_neighborhood' %}" role="button">Add New Neighborhood <span data-feather="plus"></span></a>
+    <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:neighborhood_list' %}" role="button">Neighborhoods <span data-feather="corner-up-left"></span></a>
+    <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+    <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_neighborhood' neighborhood.id %}" role="button">Delete <span data-feather="trash"></span></a>
+</div>
+
+{% endblock content %}

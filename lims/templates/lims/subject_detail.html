@@ -1,0 +1,96 @@
+{% extends "lims/base.html" %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.8/css/rowReorder.dataTables.min.css"/>
+<link rel="stylesheet" type="text/css" source="{% static 'lims/data-tables/css/editor.dataTables.min.css' %}"/>
+<link rel="stylesheet" type="text/css" source="{% static 'lims/data-tables/css/editor.bootstrap5.min.css' %}"/>
+{% endblock head %}
+{% block content %}
+{% csrf_token %}
+<div class="card">
+    <h1 class="card-header">Subject ID: {{ subject.id }}</h1>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Given Name:</strong> {{ subject.given_name }}</li>
+      <li class="list-group-item"><strong>Family Name:</strong> {{ subject.family_name }}</li>
+      {% if subject.consent_status == 'Consented' %}
+        <li class="list-group-item"><strong>Consent Status: </strong><span class="badge bg-success">{{ subject.consent_status }}</span></li>
+      {% elif subject.consent_status == 'Not Consented' %}
+      <li class="list-group-item"><strong>Consent Status: </strong><span class="badge bg-danger">{{ subject.consent_status }}</span></li>
+      {% elif subject.consent_status == "Inactive" %}
+      <li class="list-group-item"><strong>Consent Status: </strong><span class="badge bg-secondary">{{ subject.consent_status }}</span></li>
+      {% else %}
+      <li class="list-group-item"><strong>Consent Status: </strong><span class="badge bg-danger">{{ subject.consent_status }}</span></li>
+      {% endif %}
+      <li class="list-group-item"><strong>Consent Date:</strong> {{ subject.consent_date }}</li>
+      <li class="list-group-item"><strong>Withdrawn Date:</strong> {{ subject.withdrawn_date }}</li>
+      <li class="list-group-item"><strong>Location: </strong><a href="{% url 'lims:location_detail' subject.location.id %}">{{ subject.location.name }}</a></li>
+      <li class="list-group-item"><strong>Neighborhood: </strong><a href="{% url 'lims:neighborhood_detail' subject.location.neighborhood.id %}">{{ subject.location.neighborhood.name }}</a></li>
+      <li class="list-group-item"><Strong>Sex:</Strong> {{ subject.sex}}</li>
+      <li class="list-group-item"><Strong>Birthdate:</Strong> {{ subject.birth_date}}</li>
+      <li class="list-group-item"><Strong>Description:</Strong> {{ subject.description}}</li>
+      <li class="list-group-item"><Strong>Notes:</Strong> {{ subject.notes }}</li>
+      <li class="list-group-item"><Strong>Created:</Strong> {{ subject.created_on }}</li>
+
+    </ul>
+    </div>
+    <div class="d-grid gap-0 d-md-block mt-2">
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:edit_subject' subject.id %}" role="button">Edit <span data-feather="edit"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:new_subject' %}" role="button">Add New Subject <span data-feather="plus"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:subject_list' %}" role="button">Subjects <span data-feather="corner-up-left"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+        <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_subject' subject.id %}" role="button">Delete <span data-feather="trash"></span></a>
+    </div>
+
+
+    
+
+{% endblock content %}
+
+{% block js %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/dataTables.editor.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/editor.bootstrap5.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/editor.dataTables.min.js' %}"></script>
+
+<script>
+ $(document).ready(function() {
+
+    $('#subject_table').DataTable({
+    rowReorder: false,
+    stateSave: true,
+    fixedHeader: true,
+    order: [],
+    dom: 'B<"clear">lfrtip',
+
+    select: true,
+    buttons: {
+        name: 'primary',
+        buttons: [ 
+        {
+          extend: 'copy',
+          title: 'Subject Activity {{ subject.subject_ui }}'
+        },
+        {
+          extend: 'pdf',
+          title: 'Subject Activity {{ subject.subject_ui }}'
+        },
+        {
+          extend: 'csv',
+          title: 'Subject Activity {{ subject.subject_ui }}'
+        },
+        {
+          extend: 'excel',
+          title: 'Subject Activity {{ subject.subject_ui }}'
+        },]
+
+        }}
+    );
+} );
+</script>
+{% endblock js %}

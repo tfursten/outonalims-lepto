@@ -1,0 +1,78 @@
+{% extends "lims/base.html" %}
+
+
+{% block content %}
+<div class="card">
+    <h1 class="card-header">Sample: {{ sample.name }}</h1>
+    <div class="card-header">
+        <strong>Collection Status: </strong>
+        {% if sample.collection_status == "Pending" %}
+            <span class="badge bg-secondary">{{ sample.collection_status }}</span>
+        {% elif sample.collection_status == "Collected" %}
+            <span class="badge bg-success">{{ sample.collection_status }}</span>
+        {% elif sample.collection_status == "Withdrew" %}
+            <span class="badge bg-danger">{{ sample.collection_status }}</span>
+        {% else %}
+            <span class="badge bg-warning">{{ sample.collection_status }}</span>
+        {% endif %}
+        <p class="card-text"><strong>Notes:</strong> {{ sample.notes }}</p>
+        <p class="card-text"><strong>Created:</strong> {{ sample.created_on }}</p>
+
+    </div>
+    <div class="card-header">
+        {% if sample.subject %}
+        <strong>Subject: </strong><a href="{% url 'lims:subject_detail' sample.subject.id %}">{{ sample.subject.given_name |default_if_none:''}} {{ sample.subject.family_name |default_if_none:''}}</a>
+        {% else %}
+        <strong>Subject: </strong> None
+        {% endif %}
+    </div>
+    <div class="card-header">
+        <p><strong>Sample Type: </strong>{{ sample.sample_type }}</p>
+        <p><strong>Sample Source: </strong>{{ sample.source }}</p>
+
+    </div>
+    <div class="card-header">
+        <strong>Collection Event: </strong><a href="{% url 'lims:event_detail' sample.collection_event.id %}">{{ sample.collection_event.name }}</a>
+    </div>
+    <div class="card-body">
+        <p class="card-text">Location: <a href="{% url 'lims:location_detail' sample.collection_event.location.id %}">{{ sample.collection_event.location.name }}</a></p>
+        <p class="card-text">Neighborhood: <a href="{% url 'lims:neighborhood_detail' sample.collection_event.location.neighborhood.id %}">{{ sample.collection_event.location.neighborhood.name }}</a></p>
+        <p class="card-text">Event Dates: {{ sample.collection_event.start_date }} – {{ sample.collection_event.end_date }}</p>
+        <p class="card-text">Created: {{ sample.created_on }}</p>
+    </div>
+    
+        {% for pos in sample.box_position %}
+        <div class="card-header border-top">
+            <strong>Sample Box: </strong><a href="{% url 'lims:sample_box_detail' pos.box.id %}">{{ pos.box.box_name }}</a>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Box Position: <a href="{% url 'lims:sample_box_position_detail' pos.box.id pos.id %}">{{ pos.position }}</a></p>
+            <p class="card-text">Box Location: {{ pos.box.storage_location }}</p>
+            <p class="card-text">Box Shelf: {{ pos.box.storage_shelf }}</p>
+        </div>
+        
+        {% endfor %}
+
+    
+
+    {% for result in results %}
+    <div class="card-header border-top"><strong>Result ID: </strong><a href="{% url 'lims:sample_result_detail' result.id %}">Result {{ result.id }}</a> </div>
+    <div class="card-body">
+        <p class="card-text"><strong>Test: </strong><a href="{% url 'lims:test_detail' result.test.id %}">{{ result.test.name }}</a></p>
+        <p class="card-text"><strong>Detects: </strong>{{ result.test.detects }}</p>
+        <p class="card-text"><strong>Status: </strong>{{ result.result }}</p>
+        <p class="card-text"><strong>Value: </strong>{{ result.value }}</p>
+        <p class="card-text"><strong>Replicate: </strong>{{ result.replicate }}</p>
+    </div>
+    {% endfor %}
+
+</div>
+    <div class="d-grid gap-0 d-md-block mt-2">
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:edit_sample' sample.id %}" role="button">Edit <span data-feather="edit"></span></a>
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:new_result_sample' sample.id %}" role="button">Add Result <span data-feather="edit"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:sample_list' %}" role="button">Samples <span data-feather="corner-up-left"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+    </div>
+
+{% endblock content %}
+

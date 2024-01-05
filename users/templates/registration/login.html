@@ -1,0 +1,13 @@
+{% extends "lims/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<legend class="border-bottom mb-6">Login</legend>
+<form method="post">{% csrf_token %}
+    {{ form | crispy }}
+    <div class="form-group pt-3 mb-3">
+        <a class="btn btn-outline-danger mr-5" href="{% url 'lims:index' %}" role="button">Cancel</a>
+        <button class="btn btn-success" type="submit">Log in</button>
+    </div>
+    <a class="text-muted mt-5" href="{% url 'password_reset' %}">Forgot Password?</a>
+</form>
+{% endblock content %}

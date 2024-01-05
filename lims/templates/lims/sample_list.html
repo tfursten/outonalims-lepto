@@ -1,0 +1,267 @@
+{% extends "lims/base.html" %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.8/css/rowReorder.dataTables.min.css"/>
+<link rel="stylesheet" type="text/css" source="{% static 'lims/data-tables/css/editor.dataTables.min.css' %}"/>
+<link rel="stylesheet" type="text/css" source="{% static 'lims/data-tables/css/editor.bootstrap5.min.css' %}"/>
+
+{% endblock head %}
+
+{% block content %}
+{% csrf_token %}
+<h1 class="border-bottom">Samples</h1>
+<div class="d-grid gap-2 d-md-block mt-2 mb-2">
+        <a class="btn btn-primary btn" href="{% url 'lims:new_samples' %}" role="button">Add Samples <span data-feather="plus"></span></a>
+        <a class="btn btn-primary btn" href="{% url 'lims:event_for_labels' %}" role="button">Print Sample Labels <span data-feather="printer"></span></a>
+    </div>
+    <table id="sample_table" class="display table table-hover"> 
+        <thead>
+            <tr>
+                <th>Sample ID</th>
+                <th>Collection Event</th>
+                <th>Location</th>
+                <th>Neighborhood</th>
+                <th>Collection Status</th>
+                <th>Sample Type</th>
+                <th>Sample Source</th>
+                <th>Subject Given Name</th>
+                <th>Subject Family Name</th>
+            </tr>
+        </thead>
+        
+    </table>
+
+{% endblock content %}
+
+{% block js %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/dataTables.editor.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/editor.bootstrap5.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/editor.dataTables.min.js' %}"></script>
+
+<script>
+
+ $.ajaxSetup({
+    data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+ });
+ let editor; // use a global for the submit and return data rendering in the examples
+ $(document).ready(function() {
+     editor = new $.fn.dataTable.Editor( {
+        //  ajax: {
+        //     url: "{% url 'lims:sample_table_update' %}",
+        //     type: "POST",
+        //     dataType: "json",
+        //     success: () => {
+        //         $('#sample_table').DataTable().ajax.reload()
+        //         }
+        //  },
+         ajax: "{% url 'lims:sample_table_update' %}",
+         table: "#sample_table",
+         idSrc:  'id',
+         fields: [ 
+             
+             {
+                 label: "Sample ID",
+                 name: "name",
+                 type: "readonly",
+             },         
+            {
+                label: "Collection Event",
+                name: "collection_event__name",
+                type: "readonly",
+            },
+            {
+                label: "Location",
+                name: "collection_event__location__name",
+                type: "readonly",
+            },
+            {
+                label: "Neighborhood",
+                name: "collection_event__location__neighborhood__name",
+                type: "readonly",
+            },
+            {
+                label: "Collection Status",
+                name: "collection_status",
+                type:  "select",
+                options: [
+                    { label: "Collected", value: "Collected" },
+                    { label: "Pending", value: "Pending" },
+                    { label: "Refused", value: "Refused" },
+                    { label: "Withdrew",  value: "Withdrew" },
+                ]
+            },
+            {
+                label: "Sample Type",
+                name: "sample_type",
+                type: "select",
+                placeholder: "-- None/Select --",
+                placeholderValue: "",
+                placeholderDisabled: false,
+                options: [
+                    { label: "Urine", value: "Urine"},
+                    { label: "Soil", value: "Soil"},
+                    { label: "Trap", value: "Trap"},
+                    { label: "Carcass", value: "Carcass"}
+                ]
+            },
+            {
+                label: "Sample Source",
+                name: "source",
+                type: "select",
+                placeholder: "-- None/Select --",
+                placeholderDisabled: false,
+                placeholderValue: "",
+                options: [
+                    { label: 'Human', value: 'Human'},
+                    { label: 'Dog', value: 'Dog'},
+                    { label:'Cat', value: 'Cat'},
+                    { label:'Rat', value: 'Rat'},
+                    { label:'Mouse', value: 'Mouse'},
+                    { label:'Horse', value: 'Horse'},
+                    { label:'Cow', value: 'Cow'},
+                    { label:'Donkey', value: 'Donkey'},
+                    { label:'Pig', value: 'Pig'}
+                ]
+            },
+            {
+                label: "Subject Given Name",
+                name: "subject__given_name",
+                type: "readonly",
+            },
+            {
+                label: "Subject Family Name",
+                name: "subject__family_name",
+                type: "readonly",
+            },   
+         ]
+     } );
+    
+    // Activate an inline edit on click of a table cell
+    $('#sample_table').on( 'click', 'tbody td:nth-child(5), td:nth-child(6), td:nth-child(7)', function (e) {
+        editor.inline( this, {submit: 'all', onBlur: 'submit'} );
+    } );
+    
+    // $('#sample_table').on( 'click', 'tbody td:not(:first-child)', function (e) {
+    //     editor.bubble( this );
+    // } );
+
+    var collection_status = {
+        Collected: "success",
+        'Not Collected': "warning",
+        Pending: "secondary",
+        Refused: "warning",
+        Withdrew: "danger",
+    }
+    
+    $('#sample_table').DataTable({
+    rowReorder: false,
+    fixedHeader: true,
+    stateSave: true,
+    ajax: {
+        url:"{% url 'lims:sample_list_json' %}",
+        csrfmiddlewaretoken: '{{ csrf_token }}' 
+        },
+    order: [],
+    aLengthMenu: [
+            [25, 50, 100, 200, -1],
+            [25, 50, 100, 200, "All"]
+            ],
+    iDisplayLength: 25,
+    dom: 'B<"clear">lfrtip',
+    columns: [
+            { 
+              data: "name",
+              render: function ( data, type, row ) {
+                let str = '<a class="table-link" href="{% url 'lims:sample_detail' 1 %}">' + data + '</a>'
+                let newstr = str.replace("1", row.id)
+                return newstr
+            }},
+            { data: "collection_event__name" ,
+              render: function ( data, type, row ) {
+                let str = '<a class="table-link" href="{% url 'lims:event_detail' 1 %}">' + data + '</a>'
+                let newstr = str.replace("1", row.collection_event__id)
+                return newstr
+            }},
+            { data: "collection_event__location__name",
+              render: function ( data, type, row ) {
+                let str = '<a class="table-link" href="{% url 'lims:location_detail' 1 %}">' + data + '</a>'
+                let newstr = str.replace("1", row.collection_event__location__id)
+                return newstr
+            }},
+            { data: "collection_event__location__neighborhood__name",
+              render: function ( data, type, row ) {
+                let str = '<a class="table-link" href="{% url 'lims:neighborhood_detail' 1 %}">' + data + '</a>'
+                let newstr = str.replace("1", row.collection_event__location__neighborhood__id)
+                return newstr
+            }},
+            { 
+                "data": "collection_status",
+                render: function ( status ) {
+                            return status ?
+                                `<span class="badge bg-${collection_status[status]}">${status}</span>` : null     
+                        }
+            },
+            { 
+                "data": "sample_type",
+                render: function ( sample_type ) {
+                            return sample_type ?
+                                `<span>${sample_type}</span>` : null
+                }
+            },
+            { 
+                "data": "source",
+                render: function ( source ) {
+                    return source ?
+                        `<span>${source}</span>` : null
+                }
+            },
+            { data: "subject__given_name",
+              render: function ( data, type, row ) {
+                let str = '<a class="table-link" href="{% url 'lims:subject_detail' 1 %}">' + row.subject__given_name + '</a>'
+                let newstr = str.replace("1", row.subject__id).replace(/null/g, '')
+                return newstr
+            }},
+            { data: "subject__family_name",
+              render: function ( data, type, row ) {
+                let str = '<a class="table-link" href="{% url 'lims:subject_detail' 1 %}">' + row.subject__family_name + '</a>'
+                let newstr = str.replace("1", row.subject__id).replace(/null/g, '')
+                return newstr
+            }},
+          
+   
+        ],
+    select: {
+        style: 'multi+shift',
+    },
+    buttons: {
+        name: 'primary',
+        buttons: [ 
+        {
+          extend: 'copy',
+          title: 'Sample List'
+        },
+        {
+          extend: 'pdf',
+          title: 'Sample List'
+        },
+        {
+          extend: 'csv',
+          title: 'Sample List'
+        },
+        {
+          extend: 'excel',
+          title: 'Sample List'
+        },
+        { extend: "edit",   editor: editor }]
+        }}
+    );
+} );
+</script>
+{% endblock js %}

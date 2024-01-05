@@ -1,0 +1,26 @@
+{% extends "lims/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class='content-section'>
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-6">Enter ID to Correct</legend>
+            <p> This tool will attempt to find a valid ID from an ID that 
+                 is partially illegible or obsured, or copied incorrectly.</p> 
+            {{ form | crispy }}
+        </fieldset>
+        {% if fixed_sample %}
+        <h2>Fixed Sample ID: {{ fixed_sample }}</h2>
+        {% endif %}
+        {% if fixed_subject %}
+        <h2>Fixed Subject ID: {{ fixed_subject }}</h2>
+        {% endif %}
+        <div class="d-grid gap-2 d-md-block mt-2">
+            <button class="btn btn-success" type="submit">Submit</button>
+           <a class="btn btn-outline-danger mr-5" href="{% url 'lims:index' %}" role="button">Cancel</a>
+       </div>
+    </form>
+
+</div>
+{% endblock content %}

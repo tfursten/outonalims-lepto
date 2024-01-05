@@ -1,0 +1,10 @@
+{% extends "lims/base.html" %}
+
+{% block content %}
+<legend class="border-bottom mb-6">You have been logged out.</legend>
+    <div class="form-group pt-3">
+        <a class="btn btn-outline-success mr-5" href="{% url 'lims:index' %}" role="button">Home</a>
+        <button class="btn btn-success" type="submit">Log in</button>
+    </div>
+</form>
+{% endblock content %}

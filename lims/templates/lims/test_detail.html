@@ -1,0 +1,19 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<div class="card">
+    <h1 class="card-header">Test: {{ test.name }}</h1>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Detects:</strong> {{ test.detects }}</li>
+      <li class="list-group-item"><strong>Protocol:</strong> {{ test.protocol }}</li>
+      <li class="list-group-item"><strong>Created:</strong> {{ test.created_on }}</li>
+    </ul>
+</div>
+<div class="d-grid gap-0 d-md-block mt-2">
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:edit_test' test.id %}" role="button">Edit <span data-feather="edit"></span></a>
+    <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:new_test' %}" role="button">Add New Test <span data-feather="plus"></span></a>
+    <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:test_list' %}" role="button">Tests <span data-feather="corner-up-left"></span></a>
+    <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+    <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_test' test.id %}" role="button">Delete <span data-feather="trash"></span></a>
+</div>
+
+{% endblock content %}

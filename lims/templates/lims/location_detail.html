@@ -1,0 +1,41 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<div class="card">
+    <h1 class="card-header">Location: {{ location.name }}</h1>
+    <div class="card-body">
+    <ul class="list-group list-group-flush">
+      {% if location.neighborhood %}
+        <li class="list-group-item"><strong>Neighborhood:</strong> <a href="{% url 'lims:neighborhood_detail' location.neighborhood.id %}">{{ location.neighborhood.name }}</a></li>
+      {% else %}
+        <li class="list-group-item"><strong>Neighborhood:</strong> None </li>
+      {% endif %}
+      <li class="list-group-item"><strong>Address:</strong> {{ location.address }}</li>
+      <li class="list-group-item"><strong>Contact Name:</strong> {{ location.contact_name }}</li>
+      <li class="list-group-item"><strong>Contact Email:</strong> {{ location.contact_email }}</li>
+      <li class="list-group-item"><Strong>Contact Phone:</Strong> {{ location.contact_phone }}</li>
+      {% if location.consent_status == 'Consented' %}
+      <li class="list-group-item"><strong>Consent Status: </strong><span class="badge bg-success">{{ location.consent_status }}</span></li>
+      {% elif location.consent_status == 'Not Consented' %}
+      <li class="list-group-item"><strong>Consent Status: </strong><span class="badge bg-danger">{{ location.consent_status }}</span></li>
+      {% elif location.consent_status == "Inactive" %}
+      <li class="list-group-item"><strong>Consent Status: </strong><span class="badge bg-secondary">{{ location.consent_status }}</span></li>
+      {% else %}
+      <li class="list-group-item"><strong>Consent Status: </strong><span class="badge bg-danger">{{ location.consent_status }}</span></li>
+      {% endif %}
+      <li class="list-group-item"><Strong>Consent Date:</Strong> {{ location.consent_date }}</li>
+      <li class="list-group-item"><Strong>Withdrawn Date:</Strong> {{ location.consent_date }}</li>
+      <li class="list-group-item"><Strong>Latitude:</Strong> {{ location.latitude }}</li>
+      <li class="list-group-item"><Strong>Longitude:</Strong> {{ location.longitude }}</li>
+      <li class="list-group-item"><strong>Description:</strong> {{ location.description }}</li>  
+      <li class="list-group-item"><Strong>Created:</Strong> {{ location.created_on }}</li>
+    </ul>
+  </div>
+  <div class="d-grid gap-0 d-md-block mt-2">
+      <a class="btn btn-primary btn mb-2" href="{% url 'lims:edit_location' location.id %}" role="button">Edit <span data-feather="edit"></span></a>
+      <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:new_location' %}" role="button">Add New Location <span data-feather="plus"></span></a>
+      <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:location_list' %}" role="button">Locations <span data-feather="corner-up-left"></span></a>
+      <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+      <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_location' location.id %}" role="button">Delete <span data-feather="trash"></span></a>
+  </div>
+
+{% endblock content %}

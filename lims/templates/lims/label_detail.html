@@ -1,0 +1,32 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<div class="card">
+    <h1 class="card-header">Label Format: {{ label.name }}</h1>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Sheet Size:</strong> {{ label.paper_size }}</li>
+      <li class="list-group-item"><strong>Rows:</strong> {{ label.rows }}</li>
+      <li class="list-group-item"><Strong>Columns:</Strong> {{ label.columns }}</li>
+      <li class="list-group-item"><Strong>Top Margin:</Strong> {{ label.top_margin }}</li>
+      <li class="list-group-item"><Strong>Left Margin:</Strong> {{ label.left_margin }}</li>
+      <li class="list-group-item"><Strong>Label Width:</Strong> {{ label.label_width }}</li>
+      <li class="list-group-item"><Strong>Label Height:</Strong> {{ label.label_height }}</li>
+      <li class="list-group-item"><Strong>Row Margin:</Strong> {{ label.row_margin }}</li>
+      <li class="list-group-item"><Strong>Column Margin:</Strong> {{ label.col_margin }}</li>
+      <li class="list-group-item"><Strong>Top Padding:</Strong> {{ label.top_padding }}</li>
+      <li class="list-group-item"><Strong>Left Padding:</Strong> {{ label.left_padding }}</li>
+      <li class="list-group-item"><Strong>Font Size:</Strong> {{ label.font_size }}</li>
+      <li class="list-group-item"><Strong>Maximum Characters:</Strong> {{ label.max_chars }}</li>
+      <li class="list-group-item"><Strong>QR Code Size:</Strong> {{ label.qr_size }}</li>
+      <li class="list-group-item"><Strong>Line Spacing:</Strong> {{ label.line_spacing }}</li>
+      <li class="list-group-item"><Strong>Created:</Strong> {{ label.created_on }}</li>
+    </ul>
+  </div>
+  <div class="d-grid gap-0 d-md-block mt-2">
+      <a class="btn btn-primary btn mb-2" href="{% url 'lims:edit_label' label.id %}" role="button">Edit <span data-feather="edit"></span></a>
+      <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:new_label' %}" role="button">Add Label Format <span data-feather="plus"></span></a>
+      <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:label_list' %}" role="button">Label Formats <span data-feather="corner-up-left"></span></a>
+      <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+      <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_label' label.id %}" role="button">Delete <span data-feather="trash"></span></a>
+  </div>
+
+{% endblock content %}

@@ -1,0 +1,9 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<h3 class="text-danger">Not Authorized</h3>
+<p> Your permissions do not allow access to this page. Please contact admin for help. </p>
+<div class="d-grid gap-2 d-md-block mt-2">
+    <a class="btn btn-success btn" href="{% url 'lims:index' %}" role="button">Back<span data-feather="corner-up-left"></span></a>
+</div> 
+{% endblock content %}
+         

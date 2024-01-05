@@ -1,0 +1,20 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<div class="card">
+    <h1 class="card-header">Researcher: {{ researcher.name }}</h1>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Email:</strong> {{ researcher.email }}</li>
+      <li class="list-group-item"><Strong>Phone:</Strong> {{ researcher.phone }}</li>
+      <li class="list-group-item"><Strong>Created:</Strong> {{ researcher.created_on }}</li>
+    </ul>
+</div>
+<div class="d-grid gap-2 d-md-block mt-2">
+    <a class="btn btn-primary btn" href="{% url 'lims:edit_researcher' researcher.id %}" role="button">Edit <span data-feather="edit"></span></a>
+    <a class="btn btn-outline-primary btn" href="{% url 'lims:new_researcher' %}" role="button">Add New Researcher <span data-feather="plus"></span></a>
+    <a class="btn btn-outline-primary btn" href="{% url 'lims:researcher_list' %}" role="button">Researchers <span data-feather="corner-up-left"></span></a>
+    <a class="btn btn-outline-primary btn" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+    <a class="btn btn-outline-danger btn" href="{% url 'lims:delete_researcher' researcher.id %}" role="button">Delete <span data-feather="trash"></span></a>
+</div>
+
+
+{% endblock content %}

@@ -1,0 +1,18 @@
+{% extends "lims/base.html" %}
+
+{% block content %}
+<h1 class="border-bottom">Label Formats</h1>
+    <div class="d-grid gap-2 d-md-block mt-2 mb-2">
+        <a class="btn btn-primary btn" href="{% url 'lims:new_label' %}" role="button">New Label Format <span data-feather="plus"></span></a>
+    </div>
+    <div class="card">
+        <ul class="list-group list-group-flush">
+          {% for label in label_list %}
+          <li class="list-group-item"><a href="{% url 'lims:label_detail' label.id %}">{{ label.name }}</a></li>
+          {% endfor %}
+        </ul>
+    </div>
+
+
+{% endblock content %}
+

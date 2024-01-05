@@ -1,0 +1,161 @@
+{% extends "lims/base.html" %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.8/css/rowReorder.dataTables.min.css"/>
+<link rel="stylesheet" type="text/css" source="{% static 'lims/data-tables/css/editor.dataTables.min.css' %}"/>
+<link rel="stylesheet" type="text/css" source="{% static 'lims/data-tables/css/editor.bootstrap5.min.css' %}"/>
+{% endblock head %}
+
+{% block content %}
+{% csrf_token %}
+<h1 class="border-bottom">Sample Storage Boxes</h1>
+    <div class="mt-3 mb-3">
+        <a class="btn btn-primary btn" href="{% url 'lims:new_sample_box' %}" role="button">New Sample Box <span data-feather="plus"></span></a>
+    </div>
+    
+
+    <table id="sample_box_table" class="display table table-hover"  align="center"  style="width:100%"> 
+        <thead>
+            
+            <tr>
+                <th>Box ID</th>
+                <th>Available Space</th>
+                <th>No. Samples in Box</th>
+                <th>Size</th>
+                <th>Location</th>
+                <th>Shelf</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for box in box_list %}
+                <tr id="{{ box.id }}">
+                    <td><a class="table-link" href="{% url 'lims:sample_box_detail' box.id %}">
+                        {{ box.box_name }}
+                    </a></td>
+                    {% if box.is_full %}
+                    <td><span class="badge bg-danger">Full</span></td>
+                    {% else %}
+                    <td><span class="badge bg-success">{{ box.remaining }}</span></td>
+                    {% endif %}
+                    <td>{{ box.number_of_samples_in_box }}</td>
+                    <td>{{ box.size }}</td>
+                    <td>{{ box.storage_location }}</td>
+                    <td>{{ box.storage_shelf }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock content %}
+
+{% block js %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/dataTables.editor.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/editor.bootstrap5.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/editor.dataTables.min.js' %}"></script>
+<script>
+    $.ajaxSetup({
+        data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+    });
+    let editor; // use a global for the submit and return data rendering in the examples
+
+    $(document).ready(function() {
+        editor = new $.fn.dataTable.Editor( {
+            ajax: "{% url 'lims:samplebox_table_update' %}",
+            table: "#sample_box_table",
+        
+            fields: [ 
+                
+                {
+                    label: "Box ID",
+                    name: "box_id",
+                    type: "readonly",
+                },
+                {
+                    label: "Available Space",
+                    name: "available_space",
+                    type: "readonly",
+                },
+                {
+                    label: "No. Samples in Box",
+                    name: "n_samples",
+                    type: "readonly",
+                },
+                {
+                    label: "Size",
+                    name: "size",
+                    type: "readonly",
+                },
+                {
+                    label: "Box Location",
+                    name: "location",
+                    type:  "text",
+                },
+                {
+                    label: "Shelf",
+                    name: "shelf",
+                    type: "text",
+                },
+            ]
+        } );
+        
+        // Activate an inline edit on click of a table cell
+        $('#sample_box_table').on( 'click', 'tbody td:nth-child(5), td:nth-child(6)', function (e) {
+            editor.inline( this, {submit: 'all', onBlur: 'submit'} );
+        } );
+
+
+    $('#sample_box_table').DataTable({
+    rowReorder: false,
+    fixedHeader: true,
+    stateSave: true,
+    order: [],
+    aLengthMenu: [
+            [25, 50, 100, 200, -1],
+            [25, 50, 100, 200, "All"]
+            ],
+    iDisplayLength: 25,
+    dom: 'B<"clear">lfrtip',
+        columns: [
+            { data: "box_id" },
+            { data: "available_space" },
+            { data: "n_samples" },
+            { data: "size" },
+            { data: "location" },
+            { data: "shelf" }
+        ],
+    select: {
+        style: 'multi+shift',
+    },
+    buttons: {
+        name: 'primary',
+        buttons: [ 
+        {
+          extend: 'copy',
+          title: 'Sample Box List'
+        },
+        {
+          extend: 'pdf',
+          title: 'Sample Box List'
+        },
+        {
+          extend: 'csv',
+          title: 'Sample Box List'
+        },
+        {
+          extend: 'excel',
+          title: 'Sample Box List'
+        },
+        { extend: "edit",   editor: editor }]
+
+        }}
+    );
+} );
+</script>
+{% endblock js %}

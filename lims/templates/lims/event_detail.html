@@ -1,0 +1,39 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<div class="card">
+    <h1 class="card-header">Event: {{ event.name }}</h1>
+    <div class="card-body">
+    <ul class="list-group" list-group-flush">
+      <li class="list-group-item"><Strong>Neighborhood: </Strong><a href="{% url 'lims:neighborhood_detail' event.location.neighborhood.id %}">{{ event.location.neighborhood.name }}</a></li>
+      <li class="list-group-item"><Strong>Location: </Strong><a href="{% url 'lims:location_detail' event.location.id %}">{{ event.location.name }}</a></li>
+      {% if event.is_complete %}
+      <li class="list-group-item"><Strong>Status: </Strong><span class="badge bg-success">Complete</span></li>
+      {% else %}
+      <li class="list-group-item"><Strong>Status: </Strong><span class="badge bg-warning">Pending</span></li>
+      {% endif %}
+      <li class="list-group-item"><Strong>Collection Start: </Strong>{{ event.start_date }}</li>
+      <li class="list-group-item"><Strong>Collection End: </Strong>{{ event.start_date }}</li>
+      <li class="list-group-item"><strong>Notes: </strong>{{ event.notes }}</li>
+      <li class="list-group-item"><strong>Created: </strong>{{ event.created_on }}</li>
+      <li class="list-group-item"><strong>Description:</strong> {{ event.description }}</li>
+    </ul>
+    </div>
+    <h4 class="card-header">Collected By:</h4>
+    <ul class="list-group" list-group-flush">
+      {% for researcher in event.researcher.all %}
+      <li class="list-group-item"><a href="{% url 'lims:researcher_detail' researcher.id %}" >{{ researcher.name }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="d-grid gap-0 d-md-block mt-2">
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:edit_event' event.id %}" role="button">Edit <span data-feather="edit"></span></a>
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:new_samples_event' event.id %}" role="button">Add Samples <span data-feather="plus"></span></a>
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:event_detail_samples' event.id %}" role="button">Event Samples <span data-feather="list"></span></a>
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:sample_labels_options' event.id %}" role="button">Print Sample Labels <span data-feather="printer"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:new_event' %}" role="button">Add New Event <span data-feather="plus"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:event_list' %}" role="button">Events <span data-feather="corner-up-left"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+        <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_event' event.id %}" role="button">Delete <span data-feather="trash"></span></a>
+    </div>
+
+{% endblock content %}
