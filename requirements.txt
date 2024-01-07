@@ -33,7 +33,7 @@ pypng==0.20220715.0
 python-dateutil==2.8.2
 pytz==2023.3.post1
 qrcode==7.4.2
-reportlab==3.6.1
+reportlab==4.0.8
 reportlab-qrcode==0.1.4
 resolvelib==1.0.1
 six==1.16.0
