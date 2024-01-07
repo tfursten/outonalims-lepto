@@ -64,7 +64,10 @@
   </ul>
   <ul class="navbar-nav px-3">
     <li class="nav-item text-nowrap">
-        <a class="nav-link" href="{% url 'logout' %}">Log out</a>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-link nav-link">Log Out</button>
+      </form>
     </li>
   </ul>
   {% else %}

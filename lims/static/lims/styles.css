@@ -44,6 +44,11 @@ body {
   }
 }
 
+
+.navbar .btn-link {
+  font-size: 0.875rem;
+}
+
 .sidebar .nav-link {
   font-weight: 500;
   color: #333;
