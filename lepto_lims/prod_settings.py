@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import sys
 import os
 from import_export.formats.base_formats import XLSX, CSV
 import dj_database_url
