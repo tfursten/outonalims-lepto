@@ -1,10 +1,13 @@
-asgiref @ file:///home/conda/feedstock_root/build_artifacts/asgiref_1685243452975/work
-click @ file:///home/conda/feedstock_root/build_artifacts/click_1692311806742/work
+ansible==9.1.0
+ansible-core==2.16.2
+cffi==1.16.0
 crispy-bootstrap4==2022.1
-cual-id @ file:///Users/tarafurstenau/anaconda3/conda-bld/cual-id_1636047761055/work
+cryptography==41.0.7
+cual-id @ https://github.com/johnchase/cual-id/archive/master.zip
 defusedxml==0.7.1
 diff-match-patch==20230430
-Django @ file:///home/conda/feedstock_root/build_artifacts/django_1693929744596/work
+dj-database-url==2.1.0
+django==3.1.2
 django-ajax-datatable==4.4.5
 django-crispy-forms==2.0
 django-extensions==3.2.3
@@ -13,25 +16,28 @@ django-phone-field==1.8.1
 django-table-select-widget==1.1.0
 djangorestframework==3.14.0
 et-xmlfile==1.1.0
+gunicorn==21.2.0
+Jinja2==3.1.2
 MarkupPy==1.14
+MarkupSafe==2.1.3
 numpy==1.26.3
 odfpy==1.4.1
 openpyxl==3.1.2
+packaging==23.2
 pandas==2.1.4
 pillow==10.2.0
-pygraphviz @ file:///Users/ec2-user/ci_py311/pygraphviz_1678420361487/work
+psycopg2-binary==2.9.9
+pycparser==2.21
 pylabels==1.2.1
 pypng==0.20220715.0
 python-dateutil==2.8.2
 pytz==2023.3.post1
-PyYAML==6.0.1
 qrcode==7.4.2
-reportlab @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_d05za50tre/croot/reportlab_1702055123895/work
+reportlab==3.6.1
 reportlab-qrcode==0.1.4
+resolvelib==1.0.1
 six==1.16.0
-sqlparse @ file:///home/conda/feedstock_root/build_artifacts/sqlparse_1681817562700/work
 tablib==3.5.0
-typing_extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1688315532570/work
 tzdata==2023.4
 xlrd==2.0.1
 XlsxWriter==3.1.9
