@@ -20,6 +20,7 @@ from django.urls import path, include
 from lims.views import index
 
 urlpatterns = [
+    path('', index, name="index"),
     path("lims/", include("lims.urls")),
     path('admin/', admin.site.urls),
     path('login/', auth_views.LoginView.as_view(redirect_authenticated_user=True), name='login'),
