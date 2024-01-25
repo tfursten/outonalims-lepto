@@ -336,7 +336,6 @@ def subject_list_json_view(request):
         'sex'
         )
     data = {'data': list(subjects)}
-    print(data)
     return JsonResponse(data, safe=False)
 
 
@@ -387,7 +386,6 @@ def upload_sample_file(request, pk):
             for n, row in data.iterrows():
                 given_name = str(row['Subject Given Name'])
                 family_name = str(row['Subject Family Name'])
-                print(given_name, family_name, type(given_name), type(family_name))
                 try:
                     sample = Sample.objects.get(name=row['Sample ID'])
                 except Sample.DoesNotExist:
@@ -503,7 +501,6 @@ def add_samples(request, pk=None):
                 pk__in=list(set(subjects).difference(set(existing_subj_samples))))
             name_size = 8
             existing_ids = list(Sample.objects.all().values_list('name', flat=True))
-            print(existing_ids)
             n_new = additional_samples + len(create_samples_for_subjects)
             new_cual_ids = [cid[0] for cid in create_ids(n_new, name_size, existing_ids=existing_ids)]
             for subj in create_samples_for_subjects:
@@ -537,7 +534,6 @@ class EventSampleListView(SamplePermissionsMixin, DetailView):
         context = super().get_context_data(**kwargs)
         samples = Sample.objects.filter(collection_event=self.kwargs['pk'])
         context['samples'] = samples
-        print(context)
         return context
 
    
@@ -559,7 +555,6 @@ def sample_table_update_view(request):
     if (request.method == "POST") and (request.POST.get('action') == "edit"):
         update_values = {}
         # pull values from request
-        print(request.POST)
         for k, v in request.POST.items():
             if "data" in k:
                 row_id = int(k.replace("[", " ").replace("]", "").split(" ")[1])
@@ -573,7 +568,6 @@ def sample_table_update_view(request):
                     update_values[row_id]['source'] = v
         # Pull objects and check if object exists
         # return if object/s don't exist without doing any update
-        print(update_values)
         for object_id in update_values.keys():
             try:
                 sample = Sample.objects.get(pk=object_id)
@@ -614,7 +608,6 @@ def sample_table_update_view(request):
             sample.sample_type = vals['sample_type']
             sample.source = vals['source']
             sample.save()
-        print(json_response)
         return JsonResponse(json_response)
 
 
@@ -695,12 +688,10 @@ def sample_excel_sheet(request, pk):
         'subject__family_name', 'collection_event__name',
         'collection_event__location__name', 'collection_event__location__neighborhood__name',
         'collection_status', 'sample_type', 'source')
-    print(sample_data)
     df = pd.DataFrame(
         sample_data, columns=['Sample ID', 'Subject Given Name', 'Subject Family Name', 'Event', 'Location', 'Neighborhood',
                  'Collection Status', 'Sample Type', 'Sample Source']
         )
-    print(df.head())
     bio = io.BytesIO()
     writer = pd.ExcelWriter(bio, engine='xlsxwriter') 
     df.to_excel(writer, sheet_name='Sheet1', index=False)
