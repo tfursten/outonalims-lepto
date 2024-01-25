@@ -1,0 +1,108 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<a class="btn btn-primary mb-4 mt-2" href="https://github.com/tfursten/outonalims-lepto/issues" 
+role="button">Report an Issue <span data-feather="github"></span></a>
+
+
+<h3>Step 1: Add Researchers</h3>
+<p>To add Researcher info, go to the <a href="{% url 'lims:researcher_list' %}"><span data-feather="user"></span> Researchers</a> link and click the <button type="button" class="btn btn-primary btn-sm">New Researcher 
+    <span data-feather="plus"></span></button> button. Enter information about each Researcher then click <button type="button" class="btn btn-success btn-sm">Add</button>.
+</p>
+<h3>Step 2: Add Neighborhood</h3>
+<p>Homes are assigned to neighborhoods. To add a new Neighborhood go to the 
+    <a href="{% url 'lims:neighborhood_list' %}"><span data-feather="map"></span> Neighborhoods</a> link and 
+    click the <button type="button" class="btn btn-primary btn-sm">New Neighborhood 
+    <span data-feather="plus"></span></button> button.
+    You must provide a unique name using a consistent naming scheme for the Neighborhood.
+</p>
+<h3>Step 3: Add Location</h3>
+<p>Each home is a location and is assigned to a neighborhood.
+    To add a new Location, go to the <a href="{% url 'lims:location_list' %}"><span data-feather="map-pin"></span> Locations</a>
+    link and click the <button type="button" class="btn btn-primary btn-sm">New Location 
+        <span data-feather="plus"></span></button> button. Each new Location must be assigned 
+        to an existing Neighborhood. The list of all Locations can be downloaded as:
+     
+        <button type="button" class="btn btn-outline-secondary btn-sm">PDF</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm">CSV</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm">Excel</button> or copied to the clipboard
+        <button type="button" class="btn btn-outline-secondary btn-sm">Copy</button>
+</p>
+<h3>Step 4: Create a Collection Event</h3>
+<p>A collection Event is scheduled for visiting a single Location. 
+    To create a new Event, go to the <a href="{% url 'lims:event_list' %}"><span data-feather="calendar"></span> Events</a>
+    link and click the <button type="button" class="btn btn-primary btn-sm">New Event 
+        <span data-feather="plus"></span></button> button.
+        Each Event must have a unique (and consistent) name, a Location selected and a range of collection dates.
+        Researchers that will be present at the event may also be selected. 
+</p>
+<h3>Step 5: Add Subject Information</h3>
+<p>Subjects are any named individual (human or animial) that we want to track consistently throughout the project.
+    To add a new Subject, go to the <a href="{% url 'lims:subject_list' %}"><span data-feather="users"></span> Subjects</a>
+    link and click the <button type="button" class="btn btn-primary btn-sm">New Subject 
+        <span data-feather="plus"></span></button> button. Each new Subject must be assigned 
+        to an existing Location. The full detailed list of all Subject information can be downloaded as:
+        <button type="button" class="btn btn-outline-secondary btn-sm">PDF</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm">CSV</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm">Excel</button> or copied to the clipboard
+        <button type="button" class="btn btn-outline-secondary btn-sm">Copy</button>
+</p>
+<h3>Step 6: Create Samples</h3>
+<p>Once an Event is scheduled, Samples can be generated for the Event.<br>
+    To do this, either 1. Select the Event from the Event List <a href="{% url 'lims:event_list' %}"><span data-feather="calendar"></span> Events</a> and click on 
+    <button type="button" class="btn btn-primary btn-sm">Add Samples 
+    <span data-feather="plus"></span></button> button <br> OR 2. go to the <a href="{% url 'lims:sample_list' %}"><span data-feather="droplet"></span> Samples</a>
+    link and click the <button type="button" class="btn btn-primary btn-sm">Add Samples 
+        <span data-feather="plus"></span></button> button.<br>
+    On the next page, select the Event that you want to generate samples for if it is not already selected.
+    <br><b>Note:</b> You can only create samples for Events that are scheduled in the future, not for past Events.<br>Select the number of Samples that you want to create and 
+    click <button type="button" class="btn btn-success btn-sm">Add</button>.<br>
+    <b>Note:</b> If Subjects have already been added to the Location for the Event, samples will automatically be created for these Subjects in addition
+    to the number of samples selected.<br>
+    On the next page will be a list of Samples that have been generated with unique IDs and prefilled information.<br>
+    The <button type="button" class="btn btn-primary btn-sm">Download Form <span data-feather="clipboard"></span></button> button will
+    download an Excel/Google Sheets form for filling in information about the samples during collection.<br>
+    The <button type="button" class="btn btn-primary btn-sm">Upload Form <span data-feather="upload"></span></button> button will allow you
+    to upload the completed form to update the database.<br>
+    <b>Note:</b> New Subjects in form must be added prior to uploading the form (see above).
+
+</p>
+
+<h3>Step 7: Print Sample Lables</h3>
+<p>Create a Label format by going to the go to the <a href="{% url 'lims:label_list' %}"><span data-feather="columns"></span> Subjects</a> link and 
+clicking the <button type="button" class="btn btn-primary btn-sm">New Label Format
+    <span data-feather="plus"></span></button> button <br>. From here, enter a unique name for the label type and enter in all of the
+    dimensions for the label sheet.<br>
+
+
+To print Sample labels, click the <button type="button" class="btn btn-primary btn-sm">Print Sample Labels 
+    <span data-feather="printer"></span></button> button from either a selected Event page or from the <a href="{% url 'lims:sample_list' %}"><span data-feather="droplet"></span> Samples</a>
+    link and select the Event from the dropdown. 
+    You will be provided with a list of the existing Samples and Subject information for that event with all of the 
+    samples pre-selected. If you do not want to print a lable for a sample, deselect that sample. Select the appropriate printing options.
+    Change the start position to finish off a partially used label sheet (numbers increase along each column starting at 1).
+    
+    Select the label paper from the dropdown or add a new label sheet type by clicking the 
+    <button type="button" class="btn btn-outline-success btn-sm">Add New Label Format</button> button.
+    Clicking the <button type="button" class="btn btn-success btn-sm">Print</button> button will download a 
+    pdf that can be printed or saved.
+</p>
+<h3>Step 8: Mark Collected Samples</h3>
+<p>After a collection Event, the Sample labels should be scanned in, and marked with a status
+    (e.g. <span class="badge bg-success">Collected</span>,
+    <span class="badge bg-warning">Refused</span>,
+    <span class="badge bg-warning">Absent</span>, etc.).
+    One way to do this is by clicking on the QR scanner button <button type="button" class="btn btn-outline-secondary btn-sm"><span><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="black" class="bi bi-upc-scan" viewBox="0 0 16 16">
+        <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/>
+      </svg></span></button> on the top of the page. This will open up a window that will allow you to scan the QR code on the Sample label using your phone camera.
+      Once the QR code is scanned, click the <button type="button" class="btn btn-success btn-sm">Search</button> button
+      and the Sample detail page will be loaded. Click the <button type="button" class="btn btn-success btn-sm">Edit <span data-feather="edit"></span></button>
+      button to change the status of the Sample. Alternatively, the Sample ID can be typed into the search bar at the top of the page or on the Samples page.
+
+    Multiple samples can be marked as collected by going to the <a href="{% url 'lims:sample_list' %}"><span data-feather="droplet"></span> Samples</a>
+    link and locating the samples in the table. Sample status can be updated using a dropdown in the table, or multiple rows can be updated by selecting them and then clicking on the 
+    <button type="button" class="btn btn-outline-secondary btn-sm">Edit </span></button> button.
+
+</p>
+
+
+{% endblock content %}
