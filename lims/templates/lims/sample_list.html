@@ -91,6 +91,7 @@
                 name: "collection_status",
                 type:  "select",
                 options: [
+                    { label: "Not Collected", value: 'Not Collected'},
                     { label: "Collected", value: "Collected" },
                     { label: "Pending", value: "Pending" },
                     { label: "Refused", value: "Refused" },
@@ -154,7 +155,7 @@
 
     var collection_status = {
         Collected: "success",
-        'Not Collected': "warning",
+        'Not Collected': "danger",
         Pending: "secondary",
         Refused: "warning",
         Withdrew: "danger",
