@@ -27,13 +27,42 @@
   </div>
   <div class="d-grid gap-0 d-md-block mt-2">
         <a class="btn btn-primary btn mb-2" href="{% url 'lims:edit_event' event.id %}" role="button">Edit <span data-feather="edit"></span></a>
-        <a class="btn btn-primary btn mb-2" href="{% url 'lims:new_samples_event' event.id %}" role="button">Add Samples <span data-feather="plus"></span></a>
-        <a class="btn btn-primary btn mb-2" href="{% url 'lims:event_detail_samples' event.id %}" role="button">Event Samples <span data-feather="list"></span></a>
-        <a class="btn btn-primary btn mb-2" href="{% url 'lims:sample_labels_options' event.id %}" role="button">Print Sample Labels <span data-feather="printer"></span></a>
         <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:new_event' %}" role="button">Add New Event <span data-feather="plus"></span></a>
         <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:event_list' %}" role="button">Events <span data-feather="corner-up-left"></span></a>
         <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
         <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_event' event.id %}" role="button">Delete <span data-feather="trash"></span></a>
-    </div>
+  </div>
+
+  <div>
+    <h4 class="card-header">Event Samples</h4>
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:new_samples_event' event.id %}" role="button">Add Samples <span data-feather="plus"></span><span data-feather="droplet"></span></a>
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:event_detail_samples' event.id %}" role="button">Event Samples <span data-feather="list"></span></a>
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:sample_labels_options' event.id %}" role="button">Print Sample Labels <span data-feather="printer"></span></a>
+  </div>
+
+  <div>
+    <div class="d-grid gap-0 d-md-block mt-2">
+    <h4 class="card-header">Animal Surveys</h4>
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:new_animal_survey' event.id %}" role="button">Add Animal Survey <span data-feather="plus"></span><span data-feather="gitlab"></span></a>
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:animal_survey_list' event.id %}" role="button">Animal Surveys <span data-feather="list"></span></a>
+  </div>
+  </div>
+
+  <div>
+    <div class="d-grid gap-0 d-md-block mt-2">
+    <h4 class="card-header">Resident Surveys</h4>
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:new_resident_survey' event.id %}" role="button">Add Resident Survey <span data-feather="plus"></span><span data-feather="user"></span></a>
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:resident_survey_list' event.id %}" role="button">Resident Surveys <span data-feather="list"></span></a>
+  </div>
+  </div>
+
+  <div>
+    <div class="d-grid gap-0 d-md-block mt-2">
+    <h4 class="card-header">House Surveys</h4>
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:new_house_survey' event.id %}" role="button">Add House Survey <span data-feather="plus"></span><span data-feather="home"></span></a>
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:house_survey_list' event.id %}" role="button">House Surveys <span data-feather="list"></span></a>
+  </div>
+  </div>
+
 
 {% endblock content %}

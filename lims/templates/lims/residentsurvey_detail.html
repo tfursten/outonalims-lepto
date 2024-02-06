@@ -1,0 +1,44 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<div class="card">
+    <h1 class="card-header">{{ residentsurvey.subject.given_name|default_if_none:"" }} {{ residentsurvey.subject.family_name|default_if_none:"" }} Resident Survey ID: {{ residentsurvey.id }}</h1>
+    <div class="card-body">
+    <ul class="list-group" list-group-flush">
+      <li class="list-group-item"><Strong>Event: </Strong><a href="{% url 'lims:event_detail' residentsurvey.event.id %}">{{ residentsurvey.event.name }}</a></li>
+      <li class="list-group-item"><Strong>Location: </Strong><a href="{% url 'lims:location_detail' residentsurvey.event.location.id %}">{{ residentsurvey.event.location.name }}</a></li>
+      <li class="list-group-item"><Strong>Subject: </Strong><a href="{% url 'lims:subject_detail' residentsurvey.subject.id %}">{{ residentsurvey.subject.given_name|default_if_none:"" }} {{ residentsurvey.subject.family_name|default_if_none:"" }}</a></li>
+      <li class="list-group-item"><Strong>Years lived in the home: </Strong>{{ residentsurvey.years_of_residency }}</li>
+      <li class="list-group-item"><Strong>Months lived in the home: </Strong>{{ residentsurvey.months_of_residency }}</li>
+      <li class="list-group-item"><Strong>Have they visited rivers, lakes, or natural water sources in the last month: </Strong>{{ residentsurvey.visited_water_source }}</li>
+      <li class="list-group-item"><Strong>Did they have contact with the water: </Strong>{{ residentsurvey.contact_with_water_source }}</li>
+      <li class="list-group-item"><Strong>Name(s) of the water source(s) visited: </Strong>{{ residentsurvey.name_of_visited_water_source }}</li>
+      <li class="list-group-item"><Strong>Location(s) of the water source(s): </Strong>{{ residentsurvey.location_of_visited_water_source }}</li>
+      <li class="list-group-item"><Strong>Do they walk barefoot along the edge of the water source: </Strong>{{ residentsurvey.barefoot_near_water_source }} </li>
+      <li class="list-group-item"><Strong>Were there animals nearby or inside the water source: </Strong>{{ residentsurvey.animals_near_water_source }}</li>
+      <li class="list-group-item"><Strong>What type of animal(s) were near/inside the water source: </Strong>{{ residentsurvey.type_of_animal_near_water_source.all | join:", " }}</li>
+      <li class="list-group-item"><Strong>Have they seen rats/mice around the house: </Strong>{{ residentsurvey.rats_near_house }}</li>
+      <li class="list-group-item"><Strong>Have they seen rats/mice around the house during the day: </Strong>{{ residentsurvey.rats_near_house_day }}</li>
+      <li class="list-group-item"><Strong>Have they seen rats/mice around the house during the night: </Strong>{{ residentsurvey.rats_near_house_night }}</li>
+      <li class="list-group-item"><Strong>How often have they seen rats/mice around the house in the last month: </Strong>{{ residentsurvey.rat_frequency }}</li>
+      <li class="list-group-item"><Strong>Other notes about race/mice around the house: </Strong>{{ residentsurvey.rats_notes }}</li>
+      <li class="list-group-item"><Strong>Have they been in contact with animals in the last month: </Strong>{{ residentsurvey.animal_contact }}</li>
+      <li class="list-group-item"><Strong>How often are they in contact with animals: </Strong>{{ residentsurvey.animal_contact_frequency }}</li>
+      <li class="list-group-item"><Strong>Which animals have they been in contact with: </Strong>{{ residentsurvey.animal_contact_type.all | join:", " }}</li>
+      <li class="list-group-item"><Strong>How often do they walk barefoot around the house: </Strong>{{ residentsurvey.barefood_around_house }}</li>
+      <li class="list-group-item"><Strong>Notes about walking barefoot around the house: </Strong>{{ residentsurvey.barefood_around_house_notes }}</li>
+      <li class="list-group-item"><Strong>Do they boil water before consuming it: </Strong>{{ residentsurvey.boil_water }}</li>
+      <li class="list-group-item"><Strong>Notes on water boiling: </Strong>{{ residentsurvey.boil_water_notes }}</li>
+      <li class="list-group-item"><Strong>Created on: </Strong>{{ residentsurvey.created_on }}</li>
+    </ul>
+    </div>
+
+  </div>
+  <div class="d-grid gap-0 d-md-block mt-2">
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:resident_survey_update' event=residentsurvey.event.id pk=residentsurvey.id %}" role="button">Edit <span data-feather="edit"></span></a>
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:resident_survey_list' residentsurvey.event.id %}" role="button">Resident Surveys <span data-feather="list"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+        <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_resident_survey' event=residentsurvey.event.id pk=residentsurvey.id %}" role="button">Delete <span data-feather="trash"></span></a>
+  </div>
+
+
+{% endblock content %}

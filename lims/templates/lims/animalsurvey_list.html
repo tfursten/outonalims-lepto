@@ -1,0 +1,171 @@
+{% extends "lims/base.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.8/css/rowReorder.dataTables.min.css"/>
+{% endblock head %}
+
+{% block content %}
+<h1 class="border-bottom">Animal Surveys</h1>
+<div class="d-grid gap-2 d-md-block mt-2 mb-2">
+    <a class="btn btn-primary btn" href="{% url 'lims:new_animal_survey' request.resolver_match.kwargs.event %}" role="button">New Animal Survey <span data-feather="plus"></span><span data-feather="gitlab"></span></a>
+</div>
+    <table id="survey_table" class="display table table-hover"  align="center"  style="width:100%"> 
+        <thead>
+            
+            <tr>
+                <th>Survey ID</th>
+                <th>Event</th>
+                <th>Animal</th>
+                <th>Number of animals</th>
+                <th>Number of animals sampled</th>
+                <th>Feed type</th>
+                <th>Animal product</th>
+                <th>Number died</th>
+                <th>Cause of death</th>
+                <th>Disposal</th>
+                <th>Number sacrificed</th>
+                <th>Where sacrificed</th>
+                <th>Sacrifice notes</th>
+                <th>Slaughter frequency</th>
+                <th>Meat destination</th>
+                <th>Sold standing</th>
+                <th>Vet care</th>
+                <th>Vet care frequency</th>
+                <th>Vet care notes</th>
+                <th>Drinking water source</th>
+                <th>Drinking water source notes</th>
+                <th>Cleaning water source</th>
+                <th>Cleaning water source notes</th>
+                <th>Created on</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for survey in animal_survey_list %}
+                <tr>
+                    <td>
+                        <a class="table-link" href="{% url 'lims:animal_survey_detail' survey.event.id survey.id %}">
+                            {{ survey.id }}</a>
+                    </td>
+                    <td>
+                        <a class="table-link" href="{% url 'lims:event_detail' survey.event.id %}">
+                        {{ survey.event.name }}</a>
+                    </td>
+                    <td>
+                        {{  survey.animal.name }}
+                    </td>
+                    <td>
+                        {{  survey.number_of_animals }}
+                    </td>
+                    <td>
+                        {{  survey.number_sampled }}
+                    </td>
+                    <td>
+                        {{  survey.feed_type }}
+                    </td>
+                    <td>
+                        {{  survey.product }}
+                    </td>
+                    <td>
+                        {{ survey.number_died }}         
+                    </td>
+                    <td>
+                        {{  survey.cause_of_death }}
+                    </td>
+                    <td>
+                        {{  survey.disposal }}
+                    </td>
+                    <td>
+                        {{  survey.number_sacrificed }}
+                    </td>
+                    <td>
+                        {{  survey.where_sacrificed }}
+                    </td>
+                    <td>
+                        {{ survey.sacrifice_notes }}         
+                    </td>
+                    <td>
+                        {{  survey.slaughter_frequency }}
+                    </td>
+                    <td>
+                        {{  survey.meat_destination }}
+                    </td>
+                    <td>
+                        {{  survey.sold_standing }}
+                    </td>
+                    <td>
+                        {{  survey.vet_care }}
+                    </td>
+                    <td>
+                        {{  survey.vet_care_frequency }}
+                    </td>
+                    <td>
+                        {{  survey.vet_care_notes }}
+                    </td>
+                    <td>
+                        {{  survey.drinking_water_source }}
+                    </td>
+                    <td>
+                        {{  survey.drinking_water_source_notes }}
+                    </td>
+                    <td>
+                        {{  survey.cleaning_water_source }}
+                    </td>
+                    <td>
+                        {{  survey.cleaning_water_source_notes }}
+                    </td>
+                    <td>
+                        {{ survey.created_on }}
+                    </td>
+
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock content %}
+
+{% block js %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
+<script>
+    $(document).ready( function () {
+    $('#survey_table').DataTable({
+    rowReorder: false,
+    fixedHeader: true,
+    order: [],
+    stateSave: true,
+    aLengthMenu: [
+            [25, 50, 100, 200, -1],
+            [25, 50, 100, 200, "All"]
+            ],
+    iDisplayLength: 25,
+    dom: 'B<"clear">lfrtip',
+    buttons: {
+        name: 'primary',
+        buttons: [ 
+        {
+          extend: 'copy',
+          title: 'Test List'
+        },
+        {
+          extend: 'pdf',
+          title: 'Test List'
+        },
+        {
+          extend: 'csv',
+          title: 'Test List'
+        },
+        {
+          extend: 'excel',
+          title: 'Test List'
+        }]
+        }}
+    );
+} );
+</script>
+{% endblock js %}

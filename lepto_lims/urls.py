@@ -32,3 +32,4 @@ urlpatterns = [
     path('password_change/', auth_views.PasswordChangeView.as_view(), name="password_change"),
     path('users/', include('users.urls')),
 ]
+

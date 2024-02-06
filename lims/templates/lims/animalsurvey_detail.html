@@ -1,0 +1,41 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<div class="card">
+    <h1 class="card-header">{{ animalsurvey.animal.name }} Survey ID: {{ animalsurvey.id }}</h1>
+    <div class="card-body">
+    <ul class="list-group" list-group-flush">
+      <li class="list-group-item"><Strong>Event: </Strong><a href="{% url 'lims:event_detail' animalsurvey.event.id %}">{{ animalsurvey.event.name }}</a></li>
+      <li class="list-group-item"><Strong>Number of animals of this type: </Strong>{{ animalsurvey.number_of_animals }}</li>
+      <li class="list-group-item"><Strong>Number of this animal sampled: </Strong>{{ animalsurvey.number_sampled }}</li>
+      <li class="list-group-item"><Strong>Type of feed: </Strong>{{ animalsurvey.feed_type }}</li>
+      <li class="list-group-item"><Strong>Animal products: </Strong>{{ animalsurvey.product }}</li>
+      <li class="list-group-item"><Strong>Number of animals that died in last week: </Strong>{{ animalsurvey.number_died }}</li>
+      <li class="list-group-item"><Strong>Cause of death: </Strong>{{ animalsurvey.cause_of_death }}</li>
+      <li class="list-group-item"><Strong>How were dead animal disposed: </Strong>{{ animalsurvey.disposal }}</li>
+      <li class="list-group-item"><Strong>Number sacrificed: </Strong>{{ animalsurvey.number_sacrificed }}</li>
+      <li class="list-group-item"><Strong>Where animals were sacrificed: </Strong>{{ animalsurvey.where_sacrificed }}</li>
+      <li class="list-group-item"><Strong>Sacrifice notes: </Strong>{{ animalsurvey.sacrifice_notes }}</li>
+      <li class="list-group-item"><Strong>How often animals are slaughtered: </Strong>{{ animalsurvey.slaughter_frequency }}</li>
+      <li class="list-group-item"><Strong>What is done with the meat: </Strong>{{ animalsurvey.meat_destination }}</li>
+      <li class="list-group-item"><Strong>Are animals sold standing: </Strong>{{ animalsurvey.sold_standing }}</li>
+      <li class="list-group-item"><Strong>Do animals have vet care: </Strong>{{ animalsurvey.vet_care }}</li>
+      <li class="list-group-item"><Strong>How often do they receive vet care: </Strong>{{ animalsurvey.vet_care_frequency }}</li>
+      <li class="list-group-item"><Strong>Vet care notes: </Strong>{{ animalsurvey.vet_care_notes }}</li>
+      <li class="list-group-item"><Strong>Where does the animal drinking water come from: </Strong>{{ animalsurvey.drinking_water_source }}</li>
+      <li class="list-group-item"><Strong>Notes about drinking water source: </Strong>{{ animalsurvey.drinking_water_source_notes }}</li>
+      <li class="list-group-item"><Strong>Which water souce is used to clean animals/habitat: </Strong>{{ animalsurvey.cleaning_water_source }}</li>
+      <li class="list-group-item"><Strong>Notes about cleaning water source: </Strong>{{ animalsurvey.cleaning_water_source_notes }}</li>
+      <li class="list-group-item"><Strong>Created on: </Strong>{{ animalsurvey.created_on }}</li>
+    </ul>
+    </div>
+
+  </div>
+  <div class="d-grid gap-0 d-md-block mt-2">
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:animal_survey_update' event=animalsurvey.event.id pk=animalsurvey.id %}" role="button">Edit <span data-feather="edit"></span></a>
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:animal_survey_list' animalsurvey.event.id %}" role="button">Animal Surveys <span data-feather="list"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+        <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_animal_survey' event=animalsurvey.event.id pk=animalsurvey.id %}" role="button">Delete <span data-feather="trash"></span></a>
+  </div>
+
+
+{% endblock content %}

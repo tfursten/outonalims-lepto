@@ -76,6 +76,8 @@ class Subject(models.Model):
     withdrawn_date = models.DateField(null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     sex = models.CharField(max_length=10, choices=SEX_CHOICES, blank=True, null=True)
+    contact_email = models.EmailField(blank=True, null=True)
+    contact_phone = PhoneField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     notes = models.CharField(max_length=300, blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True, db_index=True, null=True)
@@ -111,6 +113,172 @@ class Event(models.Model):
         """
         return self.start_date < datetime.datetime.now().date()
     
+
+class Animal(models.Model):
+    name = models.CharField(max_length=32, null=True, blank=True)
+    def __str__(self):
+        return str(self.name) 
+
+
+class HouseSurvey(models.Model):
+    HOUSING_CHOICES = [
+        ('Cane', 'Cane'),
+        ('Palm', 'Palm'),
+        ('Adobe', 'Adobe'),
+        ('Cement', 'Cement'),
+        ('Block', 'Block'),
+        ('Wood', 'Wood'),
+        ('Mixed', 'Mixed'),
+        ('Other', 'Other')
+    ]
+    WATER_SOURCES = [
+        ('Public Network', 'Public Network'),
+        ('Delivery Truck', 'Delivery Truck'),
+        ('River/Stream', 'River/Stream'),
+        ('Ditch', 'Ditch'),
+        ('Canal', 'Canal'),
+        ('Albarrada', 'Albarrada'),
+        ('Embankment', 'Embankment'),
+        ('Other', 'Other')
+    ]
+    WASTE_MANAGEMENT = [
+        ('No Toilet', 'No Toilet'),
+        ('Cesspool', 'Cesspool'),
+        ('Public Sewage System', 'Public Sewage System'),
+        ('Discharge to River/Stream', 'Discharge to River/Stream'),
+        ('Septic Tank', 'Septic Tank'),
+        ('Latrine', 'Latrin'),
+        ('Outhouse', 'Outhouse')
+    ]
+    event = models.ForeignKey(Event, on_delete=models.PROTECT)
+    owner_of_dwelling = models.BooleanField(null=True, blank=True)
+    number_of_residents = models.PositiveIntegerField(null=True, blank=True)
+    number_of_residents_sampled = models.PositiveIntegerField(null=True, blank=True)
+    type_of_housing = models.CharField(max_length=16, choices=HOUSING_CHOICES, blank=True, null=True)
+    housing_condition_note = models.CharField(max_length=128, null=True, blank=True)
+    animals_in_backyard = models.BooleanField(null=True, blank=True)
+    animal_types = models.ManyToManyField(Animal, blank=True)
+    dry_food_stored_near_home = models.BooleanField(null=True, blank=True)
+    type_of_dry_food_stored_near_home = models.CharField(max_length=32, null=True, blank=True)
+    drinking_water_source = models.CharField(max_length=32, choices=WATER_SOURCES, blank=True, null=True)
+    drinking_water_source_notes = models.CharField(max_length=128, null=True, blank=True)
+    washing_water_source = models.CharField(max_length=32, choices=WATER_SOURCES, blank=True, null=True)
+    washing_water_source_notes = models.CharField(max_length=128, null=True, blank=True)
+    waste_management = models.CharField(max_length=32, choices=WASTE_MANAGEMENT, blank=True, null=True)
+    waste_management_notes = models.CharField(max_length=128, null=True, blank=True)
+    flooding = models.BooleanField(null=True, blank=True)
+    flooding_notes = models.CharField(max_length=128, null=True, blank=True)
+    created_on = models.DateTimeField(auto_now_add=True, db_index=True, null=True)
+
+
+class AnimalSurvey(models.Model):
+
+    ANIMAL_PRODUCT = [
+        ('Meat', 'Meat'),
+        ('Offspring', 'Offspring'),
+        ('Milk', 'Milk'),
+        ('Eggs', 'Eggs'),
+        ('Other', 'Other')
+    ]
+    ANIMAL_DISPOSAL = [
+        ('Food', 'Food'),
+        ('Buried', 'Buried'),
+        ('Sold', 'Sold'),
+        ('River', 'River'),
+        ('Other', 'Other')
+    ]
+    SACRIFICED_LOCATION = [
+        ('House', 'House'),
+        ('Municipal Slaughterhouse', 'Municipal Slaughterhouse'),
+        ('Clandestine Slaughterhouse', 'Clandestine Slaughterhouse'),
+        ('Other', 'Other')
+    ]
+    MEAT_USE = [
+        ('Self-consumption', 'Self-consumption'),
+        ('Sold', 'Sold'),
+        ('Combination', 'Combination')
+    ]
+    WATER_SOURCES = [
+        ('Public Network', 'Public Network'),
+        ('Delivery Truck', 'Delivery Truck'),
+        ('River/Stream', 'River/Stream'),
+        ('Ditch', 'Ditch'),
+        ('Canal', 'Canal'),
+        ('Albarrada', 'Albarrada'),
+        ('Embankment', 'Embankment'),
+        ('Other', 'Other')
+    ]
+
+    event = models.ForeignKey(Event, on_delete=models.PROTECT)
+    animal = models.ForeignKey(Animal, on_delete=models.PROTECT)
+    number_of_animals = models.PositiveIntegerField(null=True, blank=True)
+    number_sampled = models.PositiveIntegerField(null=True, blank=True)
+    feed_type = models.CharField(max_length=64, blank=True, null=True)
+    product = models.CharField(max_length=32, choices=ANIMAL_PRODUCT, blank=True, null=True)
+    number_died = models.PositiveIntegerField(null=True, blank=True)
+    cause_of_death = models.CharField(max_length=128, blank=True, null=True)
+    disposal = models.CharField(max_length=16, choices=ANIMAL_DISPOSAL, blank=True, null=True)
+    number_sacrificed = models.PositiveIntegerField(null=True, blank=True)
+    where_sacrificed = models.CharField(max_length=64, choices=SACRIFICED_LOCATION, blank=True, null=True)
+    sacrifice_notes = models.CharField(max_length=128, blank=True, null=True)
+    slaughter_frequency = models.CharField(max_length=64, blank=True, null=True)
+    meat_destination = models.CharField(max_length=32, choices=MEAT_USE, blank=True, null=True)
+    sold_standing = models.BooleanField(null=True, blank=True)
+    vet_care = models.BooleanField(null=True, blank=True)
+    vet_care_frequency = models.CharField(max_length=32, blank=True, null=True)
+    vet_care_notes = models.CharField(max_length=128, blank=True, null=True)
+    drinking_water_source = models.CharField(max_length=32, choices=WATER_SOURCES, blank=True, null=True)
+    drinking_water_source_notes = models.CharField(max_length=128, null=True, blank=True)
+    cleaning_water_source = models.CharField(max_length=32, choices=WATER_SOURCES, blank=True, null=True)
+    cleaning_water_source_notes = models.CharField(max_length=128, null=True, blank=True)
+    created_on = models.DateTimeField(auto_now_add=True, db_index=True, null=True)
+
+
+class ResidentSurvey(models.Model):
+    RAT_FREQUENCY = [
+        ('None', 'None'),
+        ('1-2 days per week', '1-2 days per week'),
+        ('3-4 days per week', '3-4 days per week'),
+        ('5-6 days per week', '5-6 days per week'),
+        ('Every day per week', 'Every day per week'),
+        ('Occasionally', 'Occasionally')
+    ]
+
+    ACTION_FREQUENCY = [
+        ('Always', 'Always'),
+        ('Most of the time', 'Most of the time'),
+        ('Some of the time', 'Some of the time'),
+        ('Never', 'Never')
+    ]
+    event = models.ForeignKey(Event, on_delete=models.PROTECT)
+    subject = models.ForeignKey(Subject, on_delete=models.PROTECT)
+    years_of_residency = models.PositiveIntegerField(null=True, blank=True)
+    months_of_residency = models.PositiveIntegerField(null=True, blank=True)
+    visited_water_source = models.BooleanField(null=True, blank=True)
+    contact_with_water_source = models.BooleanField(null=True, blank=True)
+    name_of_visited_water_source = models.CharField(max_length=128, blank=True, null=True)
+    location_of_visited_water_source = models.CharField(max_length=128, blank=True, null=True)
+    visited_water_source_notes = models.CharField(max_length=128, blank=True, null=True)
+    barefoot_near_water_source = models.BooleanField(null=True, blank=True)
+    animals_near_water_source = models.BooleanField(null=True, blank=True)
+    type_of_animal_near_water_source = models.ManyToManyField(Animal, blank=True, related_name='+')
+    rats_near_house = models.BooleanField(null=True, blank=True)
+    rats_near_house_day = models.BooleanField(null=True, blank=True)
+    rats_near_house_night = models.BooleanField(null=True, blank=True)
+    rat_frequency = models.CharField(max_length=32, choices=RAT_FREQUENCY, blank=True, null=True)
+    rats_notes = models.CharField(max_length=128, blank=True, null=True)
+    animal_contact = models.BooleanField(null=True, blank=True)
+    animal_contact_frequency = models.CharField(max_length=128, blank=True, null=True)
+    animal_contact_type = models.ManyToManyField(Animal, blank=True, related_name='+')
+    barefoot_around_house = models.CharField(max_length=32, choices=ACTION_FREQUENCY, blank=True, null=True)
+    barefoot_around_house_notes = models.CharField(max_length=128, blank=True, null=True)
+    boil_water = models.CharField(max_length=32, choices=ACTION_FREQUENCY, blank=True, null=True)
+    boil_water_notes = models.CharField(max_length=128, blank=True, null=True)
+    created_on = models.DateTimeField(auto_now_add=True, db_index=True, null=True)
+
+
+
+
 
 class SampleBox(models.Model):
     box_name = models.CharField(max_length=100, unique=True)
@@ -154,6 +322,7 @@ class Sample(models.Model):
     ]
     SAMPLE_TYPE = [
         ('Urine', 'Urine'),
+        ('Water', 'Water'),
         ('Soil', 'Soil'),
         ('Trap', 'Trap'),
         ('Carcass', 'Carcass')

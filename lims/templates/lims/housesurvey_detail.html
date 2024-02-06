@@ -1,0 +1,39 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<div class="card">
+    <h1 class="card-header">{{ housesurvey.event.location.name }} House Survey ID: {{ housesurvey.id }}</h1>
+    <div class="card-body">
+    <ul class="list-group" list-group-flush">
+      <li class="list-group-item"><Strong>Event: </Strong><a href="{% url 'lims:event_detail' housesurvey.event.id %}">{{ housesurvey.event.name }}</a></li>
+      <li class="list-group-item"><Strong>Location: </Strong><a href="{% url 'lims:location_detail' housesurvey.event.location.id %}">{{ housesurvey.event.location.name }}</a></li>
+      <li class="list-group-item"><Strong>Owner of dwelling: </Strong>{{ housesurvey.owner_of_dwelling }}</li>
+      <li class="list-group-item"><Strong>Number of residents: </Strong>{{ housesurvey.number_of_residents }}</li>
+      <li class="list-group-item"><Strong>Number of residents sampled: </Strong>{{ housesurvey.number_of_residents_sampled }}</li>
+      <li class="list-group-item"><Strong>Type of housing: </Strong>{{ housesurvey.type_of_housing }}</li>
+      <li class="list-group-item"><Strong>Housing condition notes: </Strong>{{ housesurvey.housing_condition_note }}</li>
+      <li class="list-group-item"><Strong>Do they keep animals in backyard: </Strong>{{ housesurvey.animals_in_backyard }}</li>
+      <li class="list-group-item"><Strong>Types of animals kept: </Strong>{{ housesurvey.animal_types.all | join:", " }} </li>
+      <li class="list-group-item"><Strong>Dry food storage (grain, peanuts, corn, etc) near home: </Strong>{{ housesurvey.dry_food_stored_near_home }}</li>
+      <li class="list-group-item"><Strong>Type of dry food stored: </Strong>{{ housesurvey.type_of_dry_food_stored_near_home }}</li>
+      <li class="list-group-item"><Strong>Source of drinking water: </Strong>{{ housesurvey.drinking_water_source }}</li>
+      <li class="list-group-item"><Strong>Drinking water source notes: </Strong>{{ housesurvey.drinking_water_source_notes }}</li>
+      <li class="list-group-item"><Strong>Washing water source: </Strong>{{ housesurvey.washing_water_source }}</li>
+      <li class="list-group-item"><Strong>Washing water source notes: </Strong>{{ housesurvey.washing_water_source_notes }}</li>
+      <li class="list-group-item"><Strong>Type of waste management: </Strong>{{ housesurvey.waste_management }}</li>
+      <li class="list-group-item"><Strong>Waste management notes: </Strong>{{ housesurvey.waste_management_notes }}</li>
+      <li class="list-group-item"><Strong>Flooding in last month: </Strong>{{ housesurvey.flooding }}</li>
+      <li class="list-group-item"><Strong>Recent flooding notes: </Strong>{{ housesurvey.flooding_notes }}</li>
+      <li class="list-group-item"><Strong>Created on: </Strong>{{ housesurvey.created_on }}</li>
+    </ul>
+    </div>
+
+  </div>
+  <div class="d-grid gap-0 d-md-block mt-2">
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:house_survey_update' event=housesurvey.event.id pk=housesurvey.id %}" role="button">Edit <span data-feather="edit"></span></a>
+        <a class="btn btn-primary btn mb-2" href="{% url 'lims:house_survey_list' housesurvey.event.id %}" role="button">House Surveys <span data-feather="list"></span></a>
+        <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+        <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_house_survey' event=housesurvey.event.id pk=housesurvey.id %}" role="button">Delete <span data-feather="trash"></span></a>
+  </div>
+
+
+{% endblock content %}

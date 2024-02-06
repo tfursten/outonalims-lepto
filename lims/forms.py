@@ -6,7 +6,7 @@ from .models import (
     Sample, Location, Researcher,
     Event, SampleBox, Neighborhood,
     Label, SampleResult, Subject,
-    Test, Sequencing)
+    Test, Sequencing, HouseSurvey, AnimalSurvey, ResidentSurvey)
 from string import capwords
 # from django.utils.encoding import force_text
 from django.utils.html import escape
@@ -121,7 +121,7 @@ class SampleUploadFileForm(ModelForm):
     class Meta:
         model = Sample
         fields = []
-        
+
 
 class SelectEventForm(ModelForm):
     additional_samples = forms.IntegerField(help_text="Samples will be created for all subjects assigned to this event, additional blank samples can be added here.")
@@ -230,3 +230,129 @@ class SampleResultForm(ModelForm):
             self.fields['sample'].queryset = Sample.objects.filter(
                 collection_status="Collected").order_by('name')
         
+
+
+
+class HouseSurveyForm(ModelForm):
+    class Meta:
+        model = HouseSurvey
+        exclude = []
+        labels = {
+            "event": "Collection Event",
+            "owner_of_dwelling": "Owner of the dwelling",
+            "number_or_residents": "Number of residents",
+            "number_or_residents_sampled": "Number of residents sampled",
+            "type_of_housing": "Type of housing material",
+            "housing_condition_note": "Housing condition notes",
+            "animals_in_backyard": "Animals in backyard",
+            "animal_types": "Types of animals in backyard",
+            "dry_food_stored_near_home": "Dry food storage (grain, peanuts, corn, etc) near home",
+            "type_of_dry_food_stored_near_home": "Type of dry food stored",
+            "drinking_water_source": "Source of drinking water",
+            "drinking_water_source_notes": "Drinking water source notes",
+            "washing_water_source": "Washing water source",
+            "washing_water_source_notes": "Washing water source notes",
+            "waste_management": "Type of waste management",
+            "waste_management_notes": "Waste management notes",
+            "flooding": "Flooding in last month",
+            "flooding_notes": "Recent flooding notes",
+        }
+
+        widgets = {
+            'animal_types': forms.CheckboxSelectMultiple(),
+        }
+    def __init__(self, *args, **kwargs):
+        if 'event' in kwargs:
+            event = kwargs.pop('event')
+            kwargs.update(initial={
+                'event': event
+            })
+        super(HouseSurveyForm, self).__init__(*args, **kwargs)
+
+
+class AnimalSurveyForm(ModelForm):
+    class Meta:
+        model = AnimalSurvey
+        exclude = []
+        labels = {
+            "event": "Collection Event",
+            "animal": "Type of animal",
+            "number_of_animals": "Number of animals of this type",
+            "number_sampled": "Number of this animal type sampled",
+            "feed_type": "Type of feed",
+            "product": "Animal products",
+            "number_died": "Number of this animal that died in last week",
+            "cause_of_death": "Cause(s) of death",
+            "disposal": "How were dead animals disposed",
+            "number_sacrificed": "Number of sacrificed animals of this type",
+            "where_sacrificed": "Where were the animals sacrificed",
+            "sacrifice_notes": "Animal sacrifice notes",
+            "slaughter_frequency": "How often are animals slaughtered",
+            "meat_destination": "What is done with the meat",
+            "sold_standing": "Are animals sold standing",
+            "vet_care": "Do animals have vet care",
+            "vet_care_frequency": "How often do they receive vet care",
+            "vet_care_notes": "Vet care notes",
+            "drinking_water_source": "Where does the animal drinking water come from",
+            "cleaning_water_source": "Which water source is used to clean animals/habitat"
+        }
+
+
+
+    def __init__(self, *args, **kwargs):
+        if 'event' in kwargs:
+            event = kwargs.pop('event')
+            kwargs.update(initial={
+                'event': event
+            })
+        super(AnimalSurveyForm, self).__init__(*args, **kwargs)
+
+
+class ResidentSurveyForm(ModelForm):
+    class Meta:
+        model = ResidentSurvey
+        exclude = []
+        labels = {
+            "event": "Collection Event",
+            "subject": "Select subject",
+            "years_of_residency": "How many years have they lived in home",
+            "months_of_residency": "How many months have they lived in home",
+            "visited_water_source": "Have they visited rivers, lakes, or natural water sources in the last month",
+            "contact_with_water_source": "Did they have contact with the water",
+            "name_of_visited_water_source": "Name(s) of the water source(s) visited",
+            "location_of_visited_water_source": "Location(s) of the water source(s)",
+            "barefoot_near_water_source": "Do they walk barefoot along the edge of the water source",
+            "animals_near_water_source": "Were there animals nearby or inside the water source",
+            "type_of_animal_near_water_source": "What type of animal(s) were near/inside the water source",
+            "rats_near_house": "Have they seen rats/mice around the house",
+            "rats_near_house_day": "Have they seen rats/mice around the house during the day",
+            "rats_near_house_night": "Have they seen rats/mice around the house during the night",
+            "rat_frequency": "How often have they seen rats/mice around the house in the last month",
+            "rats_notes": "Other notes about race/mice around the house",
+            "animal_contact": "Have they been in contact with animals in the last month",
+            "animal_contact_frequency": "How often are they in contact with animals",
+            "animal_contact_type": "Which animals have they been in contact with",
+            "barefoot_around_house": "How often do they walk barefoot around the house",
+            "barefoot_around_house_notes": "Notes about barefoot walking around house",
+            "boil_water": "Do they boil water before consuming it",
+            "boil_water_notes": "Notes about boiling water"
+        }
+        widgets = {
+            'animal_contact_type': forms.CheckboxSelectMultiple(),
+            'type_of_animal_near_water_source': forms.CheckboxSelectMultiple(),
+        }
+
+
+    def __init__(self, *args, **kwargs):
+        if 'event' in kwargs:
+            event = kwargs.pop('event')
+            kwargs.update(initial={
+                'event': event
+            })
+        super(ResidentSurveyForm, self).__init__(*args, **kwargs)
+        if 'event' in kwargs:
+            event_obj = Event.objects.get(id=event)
+            self.fields['subject'].queryset = Subject.objects.filter(
+                location=event_obj.location
+            ).order_by('given_name')
+

@@ -9,13 +9,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core import serializers
-from django.template import loader
+from django.template import loader, RequestContext
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     ListView, CreateView, DeleteView, UpdateView, DetailView)
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import ProtectedError, Count, Q, Max, Min
+
 from import_export import resources
 
 from ajax_datatable.views import AjaxDatatableView
@@ -31,14 +32,16 @@ from reportlab.pdfgen import canvas
 from .models import (
     Sample, Location, Researcher, Event,
     SampleBox, Neighborhood, Subject,
-    Label, Test, SampleResult, Sequencing)
+    Label, Test, SampleResult, Sequencing,
+    Animal,
+    ResidentSurvey, AnimalSurvey, HouseSurvey)
 
 from .forms import (
     LocationForm, ResearcherForm,
     EventForm, SampleForm, SampleBoxForm, NeighborhoodForm,
     SamplePrint, SubjectForm, SampleUploadFileForm,
     LabelForm, TestForm, SampleResultForm, FixIDS,
-    SequenceForm, SelectEventForm)
+    SequenceForm, SelectEventForm, ResidentSurveyForm, AnimalSurveyForm, HouseSurveyForm)
 
 
 # from difflib import get_close_matches
@@ -85,7 +88,6 @@ def search_view(request):
         return redirect('lims:sample_detail', pk=int(sample[0].id))
     else:
         return render(request, 'lims/sample_not_found.html', {'sample': code})
-
 
 # ============== FIX IDS =================
 
@@ -703,7 +705,7 @@ def sample_excel_sheet(request, pk):
     worksheet.data_validation('G2:G{}'.format(n + 1), {'validate': 'list', 'ignore_blank': False,
                                     'source': ['Collected','Refused','Pending','Not Collected']})
     worksheet.data_validation('H2:H{}'.format(n + 1), {'validate': 'list', 'ignore_blank': False,
-                                    'source': ['Urine', 'Soil', 'Trap', 'Carcass']})
+                                    'source': ['Urine', 'Water', 'Soil', 'Trap', 'Carcass']})
     worksheet.data_validation('I2:I{}'.format(n + 1), {'validate': 'list', 'ignore_blank': False,
                                     'source': ['Human', 'Dog', 'Cat', 'Rat', 'Mouse', 'Horse', 'Cow', 'Donkey', 'Pig', 'Environment']})
     # Create some cell formats with protection properties.
@@ -898,3 +900,151 @@ class SequenceListView(LoginRequiredMixin, ListView):
         Return all tests
         """
         return Sequencing.objects.all()
+    
+
+# =============== SURVEY VIEWS =============================
+    
+
+class ResidentSurveyListView(LoginRequiredMixin, ListView):
+    template_name_suffix = "_list"
+    context_object_name = 'resident_survey_list'
+    model = ResidentSurvey
+
+
+class HouseSurveyListView(LoginRequiredMixin, ListView):
+    template_name_suffix = "_list"
+    context_object_name = 'house_survey_list'
+    model = HouseSurvey
+
+class AnimalSurveyListView(LoginRequiredMixin, ListView):
+    template_name_suffix = "_list"
+    context_object_name = 'animal_survey_list'
+    model = AnimalSurvey
+
+
+class ResidentSurveyDetailView(SamplePermissionsMixin, DetailView):
+    model = ResidentSurvey
+
+class HouseSurveyDetailView(SamplePermissionsMixin, DetailView):
+    model = HouseSurvey
+
+class AnimalSurveyDetailView(SamplePermissionsMixin, DetailView):
+    model = AnimalSurvey
+
+
+class ResidentSurveyFormView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+    model = ResidentSurvey
+    template_name_suffix = '_new'
+    form_class = ResidentSurveyForm
+    success_message = "Resident survey was successfully added"
+
+    def get_success_url(self):
+        return reverse(
+            'lims:resident_survey_detail', args=(self.kwargs['event'], self.object.id,),
+            )
+
+    def get_form_kwargs(self):
+        kwargs = super(ResidentSurveyFormView, self).get_form_kwargs()
+        kwargs['event'] = self.kwargs['event']
+        return kwargs
+
+
+class HouseSurveyFormView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+    model = HouseSurvey
+    template_name_suffix = '_new'
+    form_class = HouseSurveyForm
+    success_message = "House survey was successfully added"
+
+    def get_success_url(self):
+        return reverse(
+            'lims:house_survey_detail', args=(self.kwargs['event'], self.object.id),
+            )
+
+    def get_form_kwargs(self):
+        kwargs = super(HouseSurveyFormView, self).get_form_kwargs()
+        kwargs['event'] = self.kwargs['event']
+        return kwargs
+    
+
+class AnimalSurveyFormView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+    model = AnimalSurvey
+    template_name_suffix = '_new'
+    form_class = AnimalSurveyForm
+    success_message = "Animal survey was successfully added"
+
+    def get_success_url(self):
+        return reverse(
+            'lims:animal_survey_detail', args=(self.kwargs['event'], self.object.id,),
+            )
+    
+    def get_form_kwargs(self):
+        kwargs = super(AnimalSurveyFormView, self).get_form_kwargs()
+        kwargs['event'] = self.kwargs['event']
+        return kwargs
+
+
+class AnimalSurveyUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+    model = AnimalSurvey
+    template_name_suffix = '_update'
+    form_class = AnimalSurveyForm
+    success_message = "Animal survey was successfully updated"
+    def get_success_url(self):
+        return reverse('lims:animal_survey_detail', args=(self.object.id,))
+
+
+class HouseSurveyUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+    model = HouseSurvey
+    template_name_suffix = '_update'
+    form_class = HouseSurveyForm
+    success_message = "House survey was successfully updated"
+    def get_success_url(self):
+        return reverse('lims:housesurvey_detail', args=(self.object.id,))
+
+
+class ResidentSurveyUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+    model = ResidentSurvey
+    template_name_suffix = '_update'
+    form_class = ResidentSurveyForm
+    success_message = "Resident survey was successfully updated"
+    def get_success_url(self):
+        return reverse('lims:residentsurvey_detail', args=(self.object.id,))
+
+
+class AnimalSurveyDeleteView(LoginRequiredMixin, DeleteView):
+    model = AnimalSurvey
+    
+    def get_success_url(self):
+        return reverse_lazy('lims:animal_survey_list', kwargs={'event': self.kwargs['event']})
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            return self.delete(request, *args, **kwargs)
+        except ProtectedError:
+            return render(request, "lims/protected_error.html")
+    
+
+class HouseSurveyDeleteView(LoginRequiredMixin, DeleteView):
+    model = HouseSurvey
+    
+    def get_success_url(self):
+        return reverse_lazy('lims:house_survey_list', kwargs={'event': self.kwargs['event']})
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            return self.delete(request, *args, **kwargs)
+        except ProtectedError:
+            return render(request, "lims/protected_error.html")
+    
+
+class ResidentSurveyDeleteView(LoginRequiredMixin, DeleteView):
+    model = ResidentSurvey
+
+    def get_success_url(self):
+        return reverse_lazy('lims:resident_survey_list', kwargs={'event': self.kwargs['event']})
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            return self.delete(request, *args, **kwargs)
+        except ProtectedError:
+            return render(request, "lims/protected_error.html")
+    
