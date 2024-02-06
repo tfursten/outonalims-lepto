@@ -6,12 +6,14 @@ from .models import (
     Sample, SampleBox, 
     Location, Neighborhood, Sequencing,
     Researcher, Event, Label,
-    Test, SampleResult 
+    Test, SampleResult, HouseSurvey, AnimalSurvey,
+    ResidentSurvey, Animal 
 )
 
 @admin.register(Sample, SampleBox,
     Location, Neighborhood, Sequencing,
     Researcher, Event, Label,
-    Test, SampleResult)
+    Test, SampleResult, ResidentSurvey, HouseSurvey,
+    Animal, AnimalSurvey)
 class ViewAdmin(ImportExportModelAdmin):
     pass
