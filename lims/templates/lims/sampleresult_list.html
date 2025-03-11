@@ -12,7 +12,6 @@
 <h1 class="border-bottom">Sample Results</h1>
     <div class="d-grid gap-2 d-md-block mt-2 mb-2">  
         <a class="btn btn-primary btn" href="{% url 'lims:new_sample_result' %}" role="button">New Sample Result <span data-feather="plus"></span></a>
-        <a class="btn btn-primary btn" href="{% url 'lims:new_multi_sample_result' %}" role="button">Create Multiple Results <span data-feather="plus"></span></a>
         <a class="btn btn-primary btn" href="{% url 'lims:upload_sample_result' %}" role="button">Upload Results <span data-feather="upload"></span></a>
         <a class="btn btn-primary btn" href="{% url 'lims:new_test' %}" role="button">New Test <span data-feather="plus"></span></a>
     </div>
@@ -22,17 +21,19 @@
         <thead>
             
             <tr>
-                <th>Sample Result ID</th>
+                <th>Result ID</th>
                 <th>Event</th>
                 <th>Location</th>
                 <th>Test</th>
                 <th>Sample</th>
                 <th>Sample Type</th>
-                <th>Replicate</th>
+                <th>Sample Source</th>
                 <th>Status</th>
-                <th>Measurement</th>
+                <th>Ct/Cq Value</th>
                 <th>Notes</th>
-                <th>Created On</th>
+                <th>Lab</th>
+                <th>Run Date</th>
+                <th>Run Name</th>
             </tr>
         </thead>
     </table>
@@ -67,7 +68,7 @@
          fields: [ 
             
             {
-                label: "Sample Result ID",
+                label: "Result ID",
                 name: "id",
                 type: "readonly",
             },
@@ -78,7 +79,7 @@
             },
             {
                 label: "Location",
-                name: "sample__location__name",
+                name: "sample__collection_event__location__name",
                 type: "readonly"
             },
             {
@@ -97,8 +98,8 @@
                 type: "readonly",
             },
             {
-                label: "Replicate",
-                name: "replicate",
+                label: "Sample Source",
+                name: 'sample__source',
                 type: "readonly",
             },
             {
@@ -109,12 +110,11 @@
                     { label: "Positive", value: "Positive" },
                     { label: "Negative", value: "Negative" },
                     { label: "Pending", value: "Pending" },
-                    { label: "Unknown", value: "Unknown" },
-                    { label: "Inconclusive",  value: "Inconclusive" },
+                    { label: "Undetermined", value: "Undetermined" },
                 ]
             },
             {
-                label: "Measurement",
+                label: "Ct/Cq Value",
                 name: "value",
                 type: "text"
             },
@@ -124,10 +124,20 @@
                 type: "text",
             },
             {
-                label: "Created On",
-                name: 'created_on',
-                type: 'readonly',
-
+                label: "Lab",
+                name: "test__lab",
+                type: "text",
+            },
+            {
+                label: "Run Date",
+                name: "run_date",
+                type: "datetime",
+                format: 'MM/DD/YYYY hh:mm:ss'   
+            },
+            {
+                label: "Run Name",
+                name: "run_name",
+                type: "text",
             }
 
          ]
@@ -140,16 +150,22 @@
 
 
     var sample_status = {
-        Positive: "danger",
-        Negative: "success",
+        Positive: "success",
+        Negative: "warning",
         Pending: "secondary",
-        Unknown: "warning",
-        Inconclusive: "warning",
+        Undetermined: "primary",
     }
     $('#result_table').DataTable({
     rowReorder: false,
     fixedHeader: true,
     stateSave: true,
+    processing: true,
+    serverSide: false,  // Set to true if using server-side processing
+    searching: true,
+    search: {
+        "smart": true,  
+        "caseInsensitive": true
+    },
     rowId: function(a) {
             return a.id;
         },
@@ -181,10 +197,10 @@
                 
             },
             {
-                data: "sample__location__name",
+                data: "sample__collection_event__location__name",
                 render: function ( data, type, row ) {
                     let str = '<a class="table-link" href="{% url 'lims:location_detail' 1 %}">' + data + '</a>'
-                    let newstr = str.replace("1", row.sample__location__id)
+                    let newstr = str.replace("1", row.sample__collection_event__location__id)
                     return newstr
                 }
             },
@@ -206,7 +222,7 @@
                 }
             },
             { data: "sample__sample_type"},
-            { data: "replicate" },
+            { data: "sample__source"},
             { 
                 "data": "result",
                 render: function ( status ) {
@@ -219,13 +235,15 @@
                 render: DataTable.render.number( ',', '.', 4, )
             },
             { data: "notes"},
+            { data: "test__lab"},
             { 
-                data: "created_on",
+                data: "run_date",
                 type: "date",
                 render: function (data, type, row) {//data
-                    return moment(row.created_on).format('MM/DD/YYYY hh:mm:ss');
+                    return moment(row.run_date).format('MM/DD/YYYY hh:mm:ss');
                 }
-            }
+            },
+            { data: "run_name"}
    
         ],
     select: {

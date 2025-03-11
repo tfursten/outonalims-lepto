@@ -3,8 +3,10 @@
 <div class="card">
     <h1 class="card-header">Test: {{ test.name }}</h1>
     <ul class="list-group list-group-flush">
-      <li class="list-group-item"><strong>Detects:</strong> {{ test.detects }}</li>
-      <li class="list-group-item"><strong>Protocol:</strong> {{ test.protocol }}</li>
+      <li class="list-group-item"><strong>Lab where test is performed:</strong> {{ test.lab }}</li>
+      <li class="list-group-item"><strong>Assay target:</strong> {{ test.detects }}</li>
+      <li class="list-group-item"><strong>Detection threshold:</strong> {{ test.threshold }}</li>
+      <li class="list-group-item"><strong>Protocol description:</strong> {{ test.protocol }}</li>
       <li class="list-group-item"><strong>Created:</strong> {{ test.created_on }}</li>
     </ul>
 </div>

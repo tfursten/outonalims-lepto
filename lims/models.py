@@ -1,6 +1,6 @@
 from django.db import models
 from phone_field import PhoneField
-from cualid import create_ids
+# from cualid import create_ids
 import datetime
 
 # Create your models here.
@@ -347,6 +347,7 @@ class Sample(models.Model):
     collection_event = models.ForeignKey(Event, on_delete=models.PROTECT)
     collection_status = models.CharField(max_length=15, choices=COLLECTION_CHOICES, default='Pending')
     notes = models.TextField(blank=True, null=True)
+    shipped_date = models.DateField(null=True, blank=True)
     box = models.ForeignKey(SampleBox, on_delete=models.PROTECT, null=True, blank=True)
     box_position = models.IntegerField(null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True, db_index=True, null=True)
@@ -389,8 +390,10 @@ class Sequencing(models.Model):
 
 class Test(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    lab = models.CharField(max_length=100, null=True, blank=True)
     protocol = models.TextField(null=True, blank=True)
     detects = models.CharField(max_length=100, null=True, blank=True)
+    threshold = models.FloatField(default=40, null=False, blank=False)
     created_on = models.DateTimeField(auto_now_add=True, db_index=True, null=True)
 
     class Meta:
@@ -406,28 +409,24 @@ class SampleResult(models.Model):
     ('Positive', 'Positive'),
     ('Negative', 'Negative'),
     ('Pending', 'Pending'),
-    ('Unknown', 'Unknown'),
-    ('Inconclusive', 'Inconclusive')
+    ('Undetermined', 'Undetermined'),
     ]
 
     sample = models.ForeignKey(Sample, on_delete=models.PROTECT)
     test = models.ForeignKey(Test, on_delete=models.PROTECT)
-    replicate = models.PositiveIntegerField(default=1)
     result = models.CharField(max_length=15, choices=RESULT_CHOICES, default='Pending')
-    value = models.CharField(max_length=100, null=True, blank=True)
+    value = models.FloatField(null=True, blank=True)
     researcher = models.ManyToManyField(Researcher, blank=True)
     notes = models.TextField(blank=True, null=True)
+    run_date = models.DateField(null=False, blank=False, default=datetime.date.today) # Required field
+    run_name = models.CharField(max_length=64, null=False, blank=False, default="Run1")
     created_on = models.DateTimeField(auto_now_add=True, db_index=True, null=True)
 
     class Meta:
         ordering = ("-created_on",)
-        # contrant that prevents duplicate sample results
-        constraints = [
-        models.UniqueConstraint(fields=["sample", "test", "replicate"], name='unique_sample_result')
-        ]
 
     def __str__(self):
-        return "{0}_{1}_{2}".format(self.sample.name, self.test, self.replicate)
+        return "{0}_{1}_{2}".format(self.sample.name, self.test, self.run_name)
     
 
 class Label(models.Model):

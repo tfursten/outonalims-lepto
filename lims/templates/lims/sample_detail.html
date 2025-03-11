@@ -29,6 +29,8 @@
     <div class="card-header">
         <p><strong>Sample Type: </strong>{{ sample.sample_type }}</p>
         <p><strong>Sample Source: </strong>{{ sample.source }}</p>
+        <p class="card-text"><strong>Shipped: </strong>{{ sample.shipped }}</p>
+        <p class="card-text"><strong>Created: </strong>{{ sample.created_on }}</p>
 
     </div>
     <div class="card-header">
@@ -38,7 +40,6 @@
         <p class="card-text">Location: <a href="{% url 'lims:location_detail' sample.collection_event.location.id %}">{{ sample.collection_event.location.name }}</a></p>
         <p class="card-text">Neighborhood: <a href="{% url 'lims:neighborhood_detail' sample.collection_event.location.neighborhood.id %}">{{ sample.collection_event.location.neighborhood.name }}</a></p>
         <p class="card-text">Event Dates: {{ sample.collection_event.start_date }} – {{ sample.collection_event.end_date }}</p>
-        <p class="card-text">Created: {{ sample.created_on }}</p>
     </div>
     
         {% for pos in sample.box_position %}

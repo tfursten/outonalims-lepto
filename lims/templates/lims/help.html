@@ -103,6 +103,75 @@ To print Sample labels, click the <button type="button" class="btn btn-primary b
     <button type="button" class="btn btn-outline-secondary btn-sm">Edit </span></button> button.
 
 </p>
+<h3 class="border-bottom pb-2">Step 9: Upload Sample Results</h3>
 
+<p>Once the samples have been collected and processed, their results need to be uploaded to the system.</p>
+
+<!-- Creating a Test -->
+<h4>Creating a Test</h4>
+<p>
+    Before uploading sample results, a test must be created in the system. Each test should include:
+</p>
+<ul>
+    <li><strong>Test Name</strong> – A unique identifier for the test.</li>
+    <li><strong>Lab Name</strong> – The laboratory where the test is performed.</li>
+    <li><strong>Target</strong> – The specific target being tested.</li>
+    <li><strong>Detection Threshold</strong> - The threshold value for considering a positive result.</li>
+    <li><strong>Description of protocol</strong> - Notes that describe the protocol.</li>
+</ul>
+<p>To create a new test:</p>
+<ol>
+    <li>Navigate to the <span data-feather="flask"></span><a href="{% url 'lims:test_list' %}"> Tests</a> page.</li>
+    <li>Click on the <button type="button" class="btn btn-primary btn-sm">New Test <span data-feather="plus"></span></button> button.</li>
+    <li>Enter the information then click <button type="button" class="btn btn-success btn-sm">Add</button>.</li>
+</ol>
+
+<!-- Uploading qPCR Results -->
+<h4>Uploading qPCR Sample Results from file</h4>
+<ol>
+    <li>Navigate to the <a href="{% url 'lims:sample_result_list' %}"><span data-feather="thermometer"></span> Sample Results</a> page.</li>
+    <li>Click on the <button type="button" class="btn btn-primary btn-sm">Upload Results <span data-feather="upload"></span></button> button.</li>
+    <li>On the upload page:
+        <ul>
+            <li>Choose Excel file to upload by clicking on the "Browse" button.</li>
+            <li>Select the researcher(s) who performed the qPCR.</li>
+            <li>Ensure that the file is in the correct format as described on the page.</li>
+            <li>Click <button type="button" class="btn btn-success btn-sm">Submit</button> to submit the results.</li>
+        </ul>
+    </li>
+    <li>The system will process the file and display a summary of uploaded results.</li>
+    <li>If errors are found (e.g., missing sample IDs, missing tests, incorrect formatting), the system will report them. **No data will be uploaded until all issues are resolved.**</li>
+    <li>The data from a given file and run date can only be uploaded once to prevent duplicate entries.</li>
+</ol>
+
+
+<!-- How Results Are Processed -->
+<h4>How Results Are Processed</h4>
+<p>When the results file is uploaded, the system will:</p>
+<ul>
+    <li>Match samples and tests with existing records in the database.</li>
+    <li>Check if results for the same run date and file name already exist to prevent duplicate uploads.</li>
+    <li>Automatically assign Positive, Negative, or Undetermined results based on the Cq value and the test threshold.</li>
+    <li>Mark the upload as successful and display a summary of the added sample results.</li>
+</ul>
+
+<!-- Viewing Uploaded Results -->
+<h4>Viewing Uploaded Results</h4>
+<p>After the upload is complete, the results will be displayed at the <a href="{% url 'lims:sample_result_list' %}"><span data-feather="thermometer"></span> Sample Results</a> pages where you can:</p>
+<ul>
+    <li>View details of each uploaded sample result.</li>
+    <li>Filter and search for specific results.</li>
+    <li>Edit values inline if needed or by clicking on the sample result id link.</li>
+</ul>
+
+<!-- Troubleshooting Upload Issues -->
+<h4>Troubleshooting Upload Issues</h4>
+<p>If the upload fails, check for the following:</p>
+<ul>
+    <li>Ensure that **all sample IDs exist** in the system.</li>
+    <li>Verify that the **test names match** an existing test in the database.</li>
+    <li>Make sure that the **Cq values are correctly formatted**.</li>
+    <li>Check for duplicate entries—sample results for the same **run date and file name** cannot be uploaded twice.</li>
+</ul>
 
 {% endblock content %}

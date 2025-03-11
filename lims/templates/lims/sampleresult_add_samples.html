@@ -1,0 +1,141 @@
+{% extends "lims/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.8/css/rowReorder.dataTables.min.css"/>
+{% endblock head %}
+
+{% block content %}
+<div class='content-section'>
+    <form id="sample-form" method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-6">Select samples to add results</legend>
+            <p>Click to select multiple samples.</p>
+            <div class="d-flex justify-content-end mb-2">
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#scanSearchModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="black" class="bi bi-upc-scan" viewBox="0 0 16 16">
+                    <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/>
+                    </svg>
+                </button>
+            </div>
+            <table id="samples" class="display table table-hover"> 
+                <thead>
+                    <tr>
+                        <th>Sample</th>
+                        <th>Event</th>
+                        <th>Location</th>
+                        <th>Storage Box</th>
+                        <th>Storage Location</th>
+                        <th>Storage Box Position</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sample in sample_list %}
+                        <tr id="{{ sample.id }}">
+                            <td>{{ sample.name }}</td>
+                            <td>{{ sample.collection_event.name }}</td>
+                            <td>{{ sample.location.name }}</td>
+                            <td>{{ sample.box.box_name }}</td>
+                            <td>{{ sample.box.storage_location }}</td>
+                            <td>{{ sample.box_position.position }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </fieldset>
+        <p class="text-muted">Samples that already have a result for the current test and replicate number will not show up in the list.
+            Try changing the replicate number if you have additional results for the same test.</p>
+        <div class="d-grid gap-2 d-md-block mt-2">
+            <button class="btn btn-success" type="submit">Add</button>
+           <a class="btn btn-outline-danger mr-5" href="{% url 'lims:sample_result_list' %}" role="button">Cancel</a>
+       </div>
+    </form>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="scanSearchModal" tabindex="-1" aria-labelledby="scanSearch" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="ModalLabel">Scan QR Code</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <video id="videoElemSearch"></video>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block js %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
+<script type="module">
+    import QrScanner from "{% static 'lims/qr-scanner/js/qr-scanner.min.js' %}";
+    QrScanner.WORKER_PATH = "{% static 'lims/qr-scanner/js/qr-scanner-worker.min.js' %}";
+      
+    $(document).ready( function () {
+    let table = $('#samples').DataTable({
+        rowReorder: false,
+        fixedHeader: true,
+        dom: 'B<"clear">lfrtip',
+        buttons: {
+            name: 'primary',
+            buttons: [ 'copy', 'csv', 'excel', 'pdf' ],
+        },
+            select: {
+                style: 'os'
+            },
+        'fnCreatedRow': function(nRow, aData, iDataIndex) {
+            $(nRow).attr('data-id', aData.DT_RowId); // or whatever you choose to set as the id
+            $(nRow).attr('id', 'id_' + aData.DT_RowId); // or whatever you choose to set as the id
+        },
+        })
+
+        const qrSearchScanner = new QrScanner(videoElemSearch, result => write_search_result(result));
+        QrScanner.listCameras()
+      
+      let scanSearch = document.getElementById('scanSearchModal')
+      scanSearchModal.addEventListener('show.bs.modal', function (event) {
+        console.log("Start Scanning")
+        qrSearchScanner.start()
+      })
+
+      function write_search_result (result) {
+        qrSearchScanner.stop()
+        console.log(result)
+        table.search( result ).draw();
+        $('#scanSearchModal').modal('hide');
+      }
+    // Handle form submission event
+   $('#sample-form').on('submit', function(e){
+      let form = this;
+
+      let rows = table.rows( {selected: true} ).ids().toArray();
+      console.log(rows)
+        // Iterate over all selected rows
+      $.each(rows, function(idx, val){
+         // Create a hidden element
+         $(form).append(
+             $('<input>')
+                .attr('type', 'hidden')
+                .attr('name', 'ids')
+                .val(rows[idx])
+         );
+
+        });
+    });
+    })
+</script>
+{% endblock js %}
+

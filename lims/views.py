@@ -1,4 +1,5 @@
 import io
+import json
 import pandas as pd
 from django.shortcuts import render
 from django.utils.text import slugify
@@ -16,17 +17,19 @@ from django.views.generic import (
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import ProtectedError, Count, Q, Max, Min
+from django.db import transaction
 
 from import_export import resources
 
 from ajax_datatable.views import AjaxDatatableView
-from cualid import create_ids
+# from cualid import create_ids
 
 import reportlab
 from reportlab.lib.pagesizes import (LETTER, A4)
 from reportlab_qrcode import QRCodeImage
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
 
 
 from .models import (
@@ -40,8 +43,8 @@ from .forms import (
     LocationForm, ResearcherForm,
     EventForm, SampleForm, SampleBoxForm, NeighborhoodForm,
     SamplePrint, SubjectForm, SampleUploadFileForm,
-    LabelForm, TestForm, SampleResultForm, FixIDS,
-    SequenceForm, SelectEventForm, ResidentSurveyForm, AnimalSurveyForm, HouseSurveyForm)
+    LabelForm, TestForm, SampleResultForm, FixIDS, SampleResultUploadFileForm,
+    SequenceForm, SelectEventForm, ResidentSurveyForm, AnimalSurveyForm, HouseSurveyForm,  EventSelectionForm)
 
 
 # from difflib import get_close_matches
@@ -278,6 +281,19 @@ class EventDeleteView(LoginRequiredMixin, DeleteView):
         except ProtectedError:
             return render(request, "lims/protected_error.html")
         
+# Select event from dropdown from other views for upload/download
+def select_event_view(request):
+    if request.method == "POST":
+        form = EventSelectionForm(request.POST)
+        if form.is_valid():
+            event_id = form.cleaned_data["event"].id
+            print(event_id)
+            return redirect("lims:event_detail_samples", pk=event_id)  # Redirect with event ID
+
+    else:
+        form = EventSelectionForm()
+
+    return render(request, "lims/select_event.html", {"form": form})
 
 # ============== SUBJECTS ===============================
 class SubjectListView(LoginRequiredMixin, ListView):
@@ -638,9 +654,9 @@ class SampleResultListView(SamplePermissionsMixin, ListView):
         context = super().get_context_data(**kwargs)
         sample_results = SampleResult.objects.all().values(
         'id', 'sample__collection_event__name', 'sample__collection_event__id',
-        'sample__location__id', 'sample__location__name',
+        'sample__collection_event__location__id', 'sample__collection_event__location__name',
         'test__name', 'test__id', 'sample__id', 'sample__name',
-        'sample__sample_type', 'replicate', 'result', 'value',
+        'sample__sample_type', 'sample__source', 'result', 'value',
         'notes', 'created_on')
 
         context['data'] = json.dumps(
@@ -829,35 +845,65 @@ def sample_labels_pdf(
     c = int(start_position) - 1
     for sample in Sample.objects.filter(pk__in=samples).order_by('name').select_related():
         for rep in range(int(replicates)):
-            x = xy_coords[c][0] + (label.left_padding * mm)
-            y = xy_coords[c][1] - (label.top_padding * mm)
-            qr_size = label.qr_size
+            x = xy_coords[c][0]
+            y = xy_coords[c][1]
+            xpad = x + (label.left_padding * mm)
+            ypad = y - (label.top_padding * mm)
+            qr_size = min(label.qr_size, label.label_height)
+            # 🖍️ **Draw label outline**
+            barcode_canvas.setStrokeColorRGB(0, 0, 0)  # Black border
+            barcode_canvas.rect(x, y - label.label_height * mm, label.label_width * mm, label.label_height * mm, stroke=1, fill=0)
             qr_code = QRCodeImage(sample.name, size=qr_size * mm)
-            qr_code.drawOn(barcode_canvas, x , y - ((qr_size - 4) * mm))
-            barcode_canvas.setFont("Helvetica", label.font_size)
+            qr_code.drawOn(barcode_canvas, xpad , ypad - ((qr_size) * mm))
+            barcode_canvas.setFont("Courier", label.font_size)
+            char_width = pdfmetrics.stringWidth("M", 'Courier', label.font_size) * 0.352778
+            max_chars = min(int((label.label_width - (label.left_padding + qr_size)) / char_width), label.max_chars)
+ 
             # Add line for last name and first name, cuts off last name before max_chars so that some characters
             # from first name will be included if full name does not fit.
             if abbreviate == "on":
                 sample_type = sample.sample_type if sample.sample_type else ""
                 source = sample.source if sample.source else ""
-                barcode_canvas.drawString(x + (qr_size * mm), y, "{0}".format(sample.name))
-                barcode_canvas.drawString(x + (qr_size * mm), (y - (label.line_spacing * mm)), "{0}".format(sample_type))
-                barcode_canvas.drawString(x + (qr_size * mm), (y - ((label.line_spacing * 2) * mm)), "{0}".format(source))
+                barcode_canvas.drawString(xpad + (qr_size * mm), ypad, "{0}".format(sample.name))
+                barcode_canvas.drawString(xpad + (qr_size * mm), (ypad - (label.line_spacing * mm)), "{0}".format(sample_type))
+                barcode_canvas.drawString(xpad + (qr_size * mm), (ypad - ((label.line_spacing * 2) * mm)), "{0}".format(source))
 
             else:
+                print(label.label_height * mm, label.label_height)
+                total_height = label.label_height  - label.top_padding
+                print('total height' , total_height)
+                font_height_mm = label.font_size * 0.352778 
+                print('font height', font_height_mm)
+                print('LS', label.line_spacing)
+                text_height = (4 * label.line_spacing) + (5 * font_height_mm)
+                print('text height', text_height)
+                print('math', (total_height - (5 * font_height_mm)) / 4)
+                line_spacing = label.line_spacing
+                # if text_height > total_height:
+                #     line_spacing = max(0, (total_height - (5 * font_height_mm)) / 4)
+                # else:
+                #     line_spacing = label.line_spacing
+                # print('linespace', line_spacing)
                 if sample.subject:
                     given = sample.subject.given_name if sample.subject.given_name else ""
                     family = sample.subject.family_name if sample.subject.family_name else ""
-                    barcode_canvas.drawString(x + (qr_size * mm), y, " ".join([given, family])[:label.max_chars])
+                    barcode_canvas.drawString(xpad + (qr_size * mm), ypad, " ".join([given, family])[:max_chars])
                 else:
-                    barcode_canvas.drawString(x + (qr_size * mm), y, "Name:" + "_" * (label.max_chars - 5))
-                sample_type = sample.sample_type if sample.sample_type else "Type:_______"
-                source = sample.source if sample.source else "Source:_________"
-                barcode_canvas.drawString(x + (qr_size * mm), (y - (label.line_spacing * mm)), "{0} {1}".format(sample_type, source)[:label.max_chars])
+                    barcode_canvas.drawString(xpad + (qr_size * mm), ypad, "Name:" + "_" * (max_chars - 5))
+                sample_type = sample.sample_type[: label.max_chars] if sample.sample_type else "Type:" + "_" * (max_chars - 5)
+                source = sample.source[: label.max_chars] if sample.source else "Source:" + "_" * (max_chars - 7)
+                barcode_canvas.drawString(xpad + (qr_size * mm), (ypad - (line_spacing * mm)), "{0}".format(sample_type))
+                barcode_canvas.drawString(xpad + (qr_size * mm), (ypad - ((line_spacing * 2) * mm)), "{0}".format(source))
+                
                 event_name = sample.collection_event.name
+                event_date = sample.collection_event.start_date.strftime('%-m-%y')
                 location = sample.collection_event.location.name
                 barcode_canvas.drawString(
-                    x + (qr_size * mm), (y - ((label.line_spacing * 2) * mm)), "{0} {1} {2}".format(sample.name, event_name, location)[:label.max_chars])
+                    xpad + (qr_size * mm), (ypad - ((line_spacing * 3) * mm)), "{0}".format(
+                        sample.name)[:max_chars])
+                barcode_canvas.drawString(
+                    xpad + (qr_size * mm), (ypad - ((line_spacing * 4) * mm)), "{0} {1}".format(
+                        event_date, location)[:max_chars])
             if c < ((rows*columns) - 1):
                 c += 1
             else:
@@ -887,6 +933,396 @@ class TestListView(LoginRequiredMixin, ListView):
         """
         return Test.objects.all()
     
+# ============== TESTS =================================
+
+class TestListView(LoginRequiredMixin, ListView):
+    template_name_suffix = "_list"
+    context_object_name = 'test_list'
+
+    def get_queryset(self):
+        """
+        Return all tests
+        """
+        return Test.objects.all()
+
+
+class TestFormView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+    model = Test
+    template_name_suffix = '_new'
+    form_class = TestForm
+    success_message = "Test was successfully added: %(name)s"
+
+
+    def get_success_url(self):
+        return reverse('lims:test_detail', args=(self.object.id,))
+        
+
+class TestDetailView(LoginRequiredMixin, DetailView):
+    model = Test
+
+
+class TestUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+    model = Test
+    template_name_suffix = '_update'
+    form_class = TestForm
+    success_message = "Test was successfully updated:  %(name)s"
+    
+    def get_success_url(self):
+        return reverse('lims:test_detail', args=(self.object.id,))
+
+class TestDeleteView(LoginRequiredMixin, DeleteView):
+    model = Test
+    success_url = reverse_lazy('lims:test_list', args=())
+    def post(self, request, *args, **kwargs):
+        try:
+            return self.delete(request, *args, **kwargs)
+        except ProtectedError:
+            return render(request, "lims/protected_error.html")
+
+
+# ============== SAMPLE RESULTS ================================
+
+class SampleResultListView(SamplePermissionsMixin, ListView):
+    template_name_suffix = "_list"
+    context_object_name = 'result_list'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sample_results = SampleResult.objects.all().values(
+        'id', 'sample__collection_event__name', 'sample__collection_event__id',
+        'sample__collection_event__location__id', 'sample__collection_event__location__name',
+        'test__name', 'test__id', 'sample__id', 'sample__name',
+        'sample__sample_type', 'sample__source', 'result', 'value',
+        'notes', 'run_date', 'run_name', 'test__lab', 'created_on')
+
+        context['data'] = json.dumps(
+            list(sample_results), cls=DjangoJSONEncoder)
+        return context
+
+    def get_queryset(self):
+        """
+        Return all results
+        """
+        return SampleResult.objects.all()
+
+class SampleResultFormView(SuccessMessageMixin, SamplePermissionsMixin, CreateView):
+    model = SampleResult
+    template_name_suffix = '_new'
+    form_class = SampleResultForm
+    success_message = "Sample result was successfully added"
+
+    def get_success_url(self):
+        return reverse('lims:sample_result_detail', args=(self.object.id,))
+
+
+@login_required
+def upload_sample_result_file(request):
+    if request.method == 'POST':
+        form = SampleResultUploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            researcher = request.POST.getlist('researcher')
+            print(researcher)
+
+            # Read metadata (first 22 rows)
+            meta = pd.read_excel(
+                request.FILES['file'],
+                nrows=22,
+                header=None, names=['key', 'value']
+            )
+
+            # Extract 'File Name' and 'Run Start Date/Time'
+            file_name = meta.loc[meta['key'] == 'File Name', 'value'].values
+            run_datetime = meta.loc[meta['key'] == 'Run Start Date/Time', 'value'].values
+
+            if len(file_name) == 0 or len(run_datetime) == 0:
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "Missing 'File Name' or 'Run Start Date/Time' in file. Please check the file and try again."
+                )
+                return render(request, 'lims/sampleresult_upload.html', {'form': form})
+
+            file_name = file_name[0]  # Extract single value
+            run_date = pd.to_datetime(run_datetime[0]).date()  # Convert to date only
+
+            # Check if data has already been uploaded
+            existing_results = SampleResult.objects.filter(run_date=run_date, run_name=file_name)
+            if existing_results.exists():
+                messages.add_message(
+                    request,
+                    messages.WARNING,
+                    f"Sample results for file '{file_name}' on {run_date} have already been uploaded. No changes have been made."
+                )
+                return render(request, 'lims/sampleresult_upload.html', {'form': form})
+
+            # Read sample data (from row 23 onward)
+            data = pd.read_excel(
+                request.FILES['file'],
+                skiprows=23,
+                usecols=["Sample", "Target", "Cq"],
+                dtype=str
+            )
+
+            data['id'] = data.index
+            data['Sample_found'] = data['Sample'].apply(
+                lambda x: x.split("_", 1)[0] if Sample.objects.filter(name=x.split("_", 1)[0]).exists() else "Not Found"
+            )
+            data['Test_found'] = data['Target'].apply(
+                lambda x: x if Test.objects.filter(name=x).exists() else "Not Found"
+            )
+
+            # Check for missing samples or tests before processing anything
+            missing_samples = data[data['Sample_found'] == "Not Found"]['Sample']
+            missing_tests = data[data['Test_found'] == "Not Found"]['Target']
+
+            if not missing_samples.empty or not missing_tests.empty:
+                # Collect missing values for the error message
+                missing_samples_list = list(set(missing_samples.tolist()))
+                missing_tests_list = list(set(missing_tests.tolist()))
+                print(missing_samples_list, missing_tests_list)
+
+                error_message = "Error: "
+                if not missing_samples.empty:
+                    error_message += f"{len(missing_samples)} sample(s) could not be identified: [{", ".join(missing_samples_list)}]. "
+                if not missing_tests.empty:
+                    error_message += f"{len(missing_tests)} test(s) could not be identified: [{", ".join(missing_tests_list)}]. "
+                error_message += "No data has been uploaded. Please check that the sample names and test names match existing names in the database and try again."
+
+                messages.add_message(request, messages.ERROR, error_message)
+
+                return render(request, 'lims/sampleresult_upload.html', {'form': form})
+
+     
+
+            data['Status'] = data['Cq'].apply(lambda x: 'Undetermined' if x.lower() == "undetermined" else None)
+            data['Value'] = data['Cq'].apply(lambda x: x if x.lower() != "undetermined" else None)
+            try:
+                created_results = []
+                with transaction.atomic():  # Ensures all inserts succeed or all fail
+                    
+                    for _, row in data.iterrows():
+                        sample = Sample.objects.get(name=row.Sample_found)
+                        test = Test.objects.get(name=row.Test_found)
+
+                        sample_result = SampleResult(
+                            sample=sample,
+                            test=test,
+                            result=row.Status,
+                            run_date=run_date,
+                            run_name=file_name,
+                            value=row.Value
+                        )
+                        sample_result.save()  # Triggers post_save signal
+                        created_results.append(sample_result)
+
+                        # Assign researchers to the newly created result
+                        if researcher:
+                            sample_result.researcher.set(researcher)
+
+                    created_results_json = json.dumps([
+                            {
+                                "id": result.id,
+                                "sample_name": result.sample.name,
+                                "test_name": result.test.name,
+                                "result": result.result,
+                                "value": result.value if result.value else "N/A",
+                                "run_date": result.run_date.strftime("%Y-%m-%d"),
+                                "run_name": result.run_name
+                            }
+                            for result in created_results
+                        ], default=str)
+                    messages.success(request, f"{len(created_results)} sample results successfully uploaded.")
+
+            except Exception as e:
+                messages.error(request, f"An error occurred while uploading results: {str(e)}. No data has been uploaded.")
+                return render(request, 'lims/sampleresult_upload.html', {'form': form})
+
+          
+            print(created_results_json)
+            return render(
+                request,
+                'lims/sampleresult_upload_complete.html',
+                {'data': created_results_json}
+            )
+
+    else:
+        form = SampleResultUploadFileForm()
+
+    return render(request, 'lims/sampleresult_upload.html', {'form': form})
+
+
+# @login_required   
+# def upload_sample_result_file(request):
+#     if request.method == 'POST':
+#         form = SampleResultUploadFileForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             researcher = request.POST.get('researcher')
+#             meta = pd.read_excel(
+#                 request.FILES['file'],
+#                 nrows=22,
+#                 header=None, names=['key', 'value'])
+#             print(meta)
+#             data = pd.read_excel(
+#                 request.FILES['file'],
+#                 skiprows=23,
+#                 usecols=["Sample", "Dye", "Target", "Cq"], dtype=str)
+#             data['id'] = data.index
+#             data['Sample'] = data['Sample'].apply(lambda x: x.split("_", 1)[0] if Sample.objects.filter(name=x.split("_", 1)[0]).exists() else "Not Found")
+#             data['Test'] = data['Target'].apply(lambda x: x if Test.objects.filter(name=x).exists() else "Not Found")
+#             data['Status'] = data['Cq'].apply(lambda x: "Positive" if x.lower() != "undetermined" else "Negative")
+#             data['Value'] = data['Cq']
+#             changes = []
+
+#             for n, row in data.iterrows():
+#                 if "Not Found" in row.values:
+#                     changes.append("Not Added")
+#                     continue
+#                 sample = Sample.objects.get(name=row.Sample)
+#                 test = Test.objects.get(name=row.Test)
+#                 sample_result, created = SampleResult.objects.create(
+#                     sample=sample, test=test,
+#                 )
+#                 sample_result.result = row.Status
+#                 sample_result.value = row.Value
+#                 if researcher:
+#                     sample_result.researcher.set(researcher)
+#                 sample_result.save()
+#                 changes.append("Created" if created else "Updated")
+            
+#             data['Changes'] = changes
+#             data.Changes = pd.Categorical(data.Changes, 
+#                       categories=["Not Added", "Created"],
+#                       ordered=True)
+#             data = data[['id', 'Sample', 'Test', 'Status', 'Value', 'Changes']]
+#             data = data.sort_values('Changes')
+#             if "Not Added" in data.Changes.values:
+                
+#                 messages.add_message(
+#                     request,
+#                     messages.WARNING,
+#                     '{} records could not be added. Please check and resubmit.'.format(
+#                         data.Changes.value_counts()['Not Added']
+#                     ))
+            
+#             data = data.to_json(orient="records")
+            
+#             return render(
+#                 request,
+#                 'lims/sampleresult_upload_complete.html',
+#                 {'data': data})
+#     else:
+#         form = SampleResultUploadFileForm()
+#     return render(request, 'lims/sampleresult_upload.html', {'form': form})
+
+
+
+
+class SampleResultSampleFormView(SuccessMessageMixin, SamplePermissionsMixin, CreateView):
+    model = SampleResult
+    template_name_suffix = '_sample_new'
+    form_class = SampleResultForm
+    success_message = "Sample result was successfully added"
+
+    def get_success_url(self):
+        return reverse('lims:sample_result_detail', args=(self.object.id,))
+
+    def get_form_kwargs(self):
+        kwargs = super(SampleResultSampleFormView, self).get_form_kwargs()
+        kwargs['sample'] = self.kwargs['pk']
+        return kwargs
+    
+    def get_success_url(self):
+        return reverse('lims:sample_result_detail', args=(self.object.id,))
+        
+
+
+class SampleResultDetailView(SamplePermissionsMixin, DetailView):
+    model = SampleResult
+
+
+class SampleResultUpdateView(SuccessMessageMixin, SamplePermissionsMixin, UpdateView):
+    model = SampleResult
+    template_name_suffix = '_update'
+    form_class = SampleResultForm
+    success_message = "Sample result was successfully updated"
+    def get_success_url(self):
+        return reverse('lims:sample_result_detail', args=(self.object.id,))
+
+
+class SampleResultDeleteView(SamplePermissionsMixin, DeleteView):
+    model = SampleResult
+    success_url = reverse_lazy('lims:sample_result_list', args=())
+    def post(self, request, *args, **kwargs):
+        try:
+            return self.delete(request, *args, **kwargs)
+        except ProtectedError:
+            return render(request, "lims/protected_error.html")
+
+    
+@login_required
+def sampleresults_table_update_view(request):
+    if (request.method == "POST") and (request.POST.get('action') == "edit"):
+        update_values = {}
+        # pull values from request
+        for k, v in request.POST.items():
+            if "data" in k:
+                row_id = int(k.replace("[", " ").replace("]", "").split(" ")[1])
+                if row_id not in update_values:
+                    update_values[row_id] = {}
+                if "result" in k:
+                    update_values[row_id]['result'] = v
+                elif "value" in k:
+                    if v == "":
+                        update_values[row_id]['value'] = None
+                    else:
+                        update_values[row_id]['value'] = float(v)
+                elif "notes" in k:
+                    update_values[row_id]['notes'] = v
+        # Pull objects and check if object exists
+        # return if object/s don't exist without doing any update
+        for object_id in update_values.keys():
+            try:
+                sample_result = SampleResult.objects.get(pk=object_id)
+                update_values[object_id]['object'] = sample_result
+            except SampleResult.DoesNotExist as e:
+                return JsonResponse({"error": str(e)})
+        # Form validation
+        json_response = {"data": []}
+        for obj_id, vals in update_values.items():
+            ori_post = request.POST.copy()
+            ori_post['sample'] = vals['object'].sample
+            ori_post['test'] = vals['object'].test
+            ori_post['run_date'] = vals['object'].run_date
+            ori_post['run_name'] = vals['object'].run_name
+            for k, v in vals.items():
+                if k != 'object':
+                    ori_post[k] = v
+            form = SampleResultForm(ori_post, instance=vals['object'])
+
+            if form.is_valid():
+                data = SampleResult.objects.filter(pk=obj_id).values(
+                    'id', 'sample__collection_event__name', 'sample__collection_event__id',
+                    'sample__collection_event__location__id', 'sample__collection_event__location__name',
+                    'test__name', 'test__id', 'sample__id', 'sample__name',
+                    'sample__sample_type', 'sample__source', 'created_on', 'result',
+                    'value', 'notes', 'run_date', 'run_name', 'test__lab')[0]
+
+                data['result'] = vals['result']
+                data['value'] = vals['value']
+                data['notes'] = vals['notes']
+
+                json_response['data'].append(data)
+            else:
+                return JsonResponse({"error": str(form.errors)})
+        # Update database
+        for obj_id, vals in update_values.items():
+            sampleresult = vals['object']
+            sampleresult.result = vals['result']
+            sampleresult.value = vals['value']
+            sampleresult.notes = vals['notes']
+            sampleresult.save()
+            
+        return JsonResponse(json_response)
 
 
 # ============== SEQUENCING =================================

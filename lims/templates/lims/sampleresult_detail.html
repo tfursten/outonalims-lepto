@@ -1,0 +1,40 @@
+{% extends "lims/base.html" %}
+{% block content %}
+<div class="card">
+    <h1 class="card-header">Sample Result: {{ sampleresult.id }}</h1>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Event: </strong><a href="{% url 'lims:event_detail' sampleresult.sample.collection_event.id %}">{{ sampleresult.sample.collection_event.name }}</a></li>
+      <li class="list-group-item"><strong>Location: </strong><a href="{% url 'lims:location_detail' sampleresult.sample.collection_event.location.id %}">{{ sampleresult.sample.collection_event.location.name }}</a></li>
+      <li class="list-group-item"><strong>Sample: </strong><a href="{% url 'lims:sample_detail' sampleresult.sample.id %}">{{ sampleresult.sample.name }}</a></li>
+      <li class="list-group-item"><strong>Test: </strong><a href="{% url 'lims:test_detail' sampleresult.test.id %}">{{ sampleresult.test.name }}</a></li>
+      <li class="list-group-item"><strong>Detects:</strong> {{ sampleresult.test.detects }}</li>
+      <li class="list-group-item"><strong>Status:</strong> 
+
+      {% if sampleresult.result == "Positive" %}
+      <span class="badge bg-success">{{ sampleresult.result }}</span>
+      {% elif sampleresult.result == "Negative" %}
+      <span class="badge bg-primary">{{ sampleresult.result }}</span>
+      {% elif sampleresult.result == "Pending" %}
+      <span class="badge bg-secondary">{{ sampleresult.result }}</span>
+      {% else %}
+      <span class="badge bg-warning">{{ sampleresult.result }}</span>
+      {% endif %}
+      </li>
+      <li class="list-group-item"><strong>Ct/Cq Value:</strong> {{ sampleresult.value }}</li>
+      {% for researcher in sampleresult.researcher.all %}
+      <li class="list-group-item"><strong>Researcher: </strong><a href="{% url 'lims:researcher_detail' researcher.id %}">{{ researcher.name }}</a></li>
+      {% endfor %}
+      <li class="list-group-item"><strong>Run Name:</strong> {{ sampleresult.run_name }}</li>
+      <li class="list-group-item"><strong>Notes:</strong> {{ sampleresult.notes }}</li>
+      <li class="list-group-item"><strong>Created:</strong> {{ sampleresult.created_on }}</li>
+    </ul>
+</div>
+<div class="d-grid gap-0 d-md-block mt-2">
+    <a class="btn btn-primary btn mb-2" href="{% url 'lims:edit_sample_result' sampleresult.id %}" role="button">Edit <span data-feather="edit"></span></a>
+    <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:new_sample_result' %}" role="button">Add New Sample Result <span data-feather="plus"></span></a>
+    <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:sample_result_list' %}" role="button">Sample Results <span data-feather="corner-up-left"></span></a>
+    <a class="btn btn-outline-primary btn mb-2" href="{% url 'lims:index' %}" role="button">Home <span data-feather="corner-up-left"></span></a>
+    <a class="btn btn-outline-danger btn mb-2" href="{% url 'lims:delete_sample_result' sampleresult.id %}" role="button">Delete <span data-feather="trash"></span></a>
+</div>
+
+{% endblock content %}

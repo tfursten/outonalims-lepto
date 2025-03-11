@@ -14,6 +14,8 @@
 <div class="d-grid gap-2 d-md-block mt-2 mb-2">
         <a class="btn btn-primary btn" href="{% url 'lims:new_samples' %}" role="button">Add Samples <span data-feather="plus"></span></a>
         <a class="btn btn-primary btn" href="{% url 'lims:event_for_labels' %}" role="button">Print Sample Labels <span data-feather="printer"></span></a>
+        <a class="btn btn-primary btn" href="{% url 'lims:select_event' %}" role="button">Update Samples <span data-feather="edit"></span></a>
+
     </div>
     <table id="sample_table" class="display table table-hover"> 
         <thead>
@@ -25,8 +27,7 @@
                 <th>Collection Status</th>
                 <th>Sample Type</th>
                 <th>Sample Source</th>
-                <th>Subject Given Name</th>
-                <th>Subject Family Name</th>
+                <th>Shipped</th>
             </tr>
         </thead>
         
@@ -95,7 +96,6 @@
                     { label: "Collected", value: "Collected" },
                     { label: "Pending", value: "Pending" },
                     { label: "Refused", value: "Refused" },
-                    { label: "Withdrew",  value: "Withdrew" },
                 ]
             },
             {
@@ -131,17 +131,12 @@
                     { label:'Donkey', value: 'Donkey'},
                     { label:'Pig', value: 'Pig'}
                 ]
-            },
+            }, 
             {
-                label: "Subject Given Name",
-                name: "subject__given_name",
-                type: "readonly",
-            },
-            {
-                label: "Subject Family Name",
-                name: "subject__family_name",
-                type: "readonly",
-            },   
+                label: "Shipped",
+                name: "shipped_date",
+                type: "datetime",
+            }
          ]
      } );
     
@@ -156,16 +151,15 @@
 
     var collection_status = {
         Collected: "success",
-        'Not Collected': "danger",
+        'Not Collected': "primary",
         Pending: "secondary",
         Refused: "warning",
-        Withdrew: "danger",
     }
     
     $('#sample_table').DataTable({
     rowReorder: false,
     fixedHeader: true,
-    stateSave: true,
+    stateSave: false,
     ajax: {
         url:"{% url 'lims:sample_list_json' %}",
         csrfmiddlewaretoken: '{{ csrf_token }}' 
@@ -224,18 +218,13 @@
                         `<span>${source}</span>` : null
                 }
             },
-            { data: "subject__given_name",
-              render: function ( data, type, row ) {
-                let str = '<a class="table-link" href="{% url 'lims:subject_detail' 1 %}">' + row.subject__given_name + '</a>'
-                let newstr = str.replace("1", row.subject__id).replace(/null/g, '')
-                return newstr
-            }},
-            { data: "subject__family_name",
-              render: function ( data, type, row ) {
-                let str = '<a class="table-link" href="{% url 'lims:subject_detail' 1 %}">' + row.subject__family_name + '</a>'
-                let newstr = str.replace("1", row.subject__id).replace(/null/g, '')
-                return newstr
-            }},
+            { 
+                "data": "shipped",
+                render: function ( shipped ) {
+                    return shipped ?
+                        `<span>${shipped}</span>` : null
+                }
+            }
           
    
         ],

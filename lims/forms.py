@@ -114,7 +114,10 @@ class SubjectForm(ModelForm):
 class SampleForm(ModelForm):
     class Meta:
         model = Sample
-        fields = ['subject', 'collection_status', 'sample_type', 'source', 'notes']
+        fields = ['subject', 'collection_status', 'sample_type', 'source', 'shipped_date', 'notes']
+        widgets = {
+            'shipped_date': DateInput(),
+        }
 
 class SampleUploadFileForm(ModelForm):
     file = forms.FileField()
@@ -202,7 +205,15 @@ class LabelForm(ModelForm):
 class TestForm(ModelForm):
     class Meta:
         model = Test
-        fields = ['name', 'protocol', 'detects']
+        fields = ['name', 'lab', 'detects', 'threshold', 'protocol', ]
+        labels = {
+            'name': 'Test Name',
+            'lab': 'Name of lab where test is performed',
+            'detects': 'What does the assay target',
+            'threshold': 'Threshold for detection',
+            'protocol': 'Description of protocol'
+        }
+
 
 class SequenceForm(ModelForm):
     class Meta:
@@ -216,21 +227,55 @@ class SequenceForm(ModelForm):
         self.fields['samples'].queryset = Sample.objects.filter(collection_status="Collected").order_by("name")
 
 
+
+
+
 class SampleResultForm(ModelForm):
     class Meta:
         model = SampleResult
-        fields = ['sample', 'test', 'replicate', 'result', 'value', 'notes', 'researcher']
-    def __init__(self, *args, **kwargs):
-            if 'sample' in kwargs:
-                sample = kwargs.pop('sample')
-                kwargs.update(initial={
-                    'sample': sample
-                })
-            super(SampleResultForm, self).__init__(*args, **kwargs)
-            self.fields['sample'].queryset = Sample.objects.filter(
-                collection_status="Collected").order_by('name')
-        
+        fields = ['sample', 'test', 'result', 'value', 'run_date', 'run_name', 'researcher', 'notes', ]
+        widgets = {
+            'run_date': DateInput()}
+        labels= {
+            'value': 'Ct/Cq Value',
+            'run_date': 'Date of qPCR Run',
+            'run_name': 'Name of qPCR Run (hint: use the filename of the qPCR output to ensure results are not entered multiple times)',
+            'researcher': 'Select researcher(s) who performed the qPCR (cmd/ctrl click to select multiple)'
+        }
 
+    def __init__(self, *args, **kwargs):
+        super(SampleResultForm, self).__init__(*args, **kwargs)
+
+        # Prefill existing sample if editing an instance
+        if self.instance and self.instance.pk:
+            selected_sample = self.instance.sample
+        else:
+            selected_sample = None
+
+        # Filter samples to only show collected ones and include the currently selected sample
+        queryset = Sample.objects.filter(collection_status="Collected").order_by('name')
+
+        # If editing and a sample is already selected, include it in the queryset
+        if selected_sample and selected_sample not in queryset:
+            queryset = Sample.objects.filter(pk=selected_sample.pk) | queryset
+
+        self.fields['sample'].queryset = queryset
+
+class EventSelectionForm(forms.Form):
+    event = forms.ModelChoiceField(
+        queryset=Event.objects.all(), 
+        label="Select Event",
+        widget=forms.Select(attrs={"class": "form-control"})
+    )     
+
+class SampleResultUploadFileForm(ModelForm):
+    file = forms.FileField(help_text="Choose file to upload")
+    class Meta:
+        model = SampleResult
+        fields = ['file', 'researcher']
+        labels = {
+            'researcher': 'Select researcher(s) who performed the qPCR (cmd/ctrl click to select multiple)',
+            }
 
 
 class HouseSurveyForm(ModelForm):
