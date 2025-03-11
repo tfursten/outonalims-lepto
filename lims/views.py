@@ -1083,9 +1083,9 @@ def upload_sample_result_file(request):
 
                 error_message = "Error: "
                 if not missing_samples.empty:
-                    error_message += f"{len(missing_samples)} sample(s) could not be identified: [{", ".join(missing_samples_list)}]. "
+                    error_message += f"{len(missing_samples)} sample(s) could not be identified: [{', '.join(missing_samples_list)}]. "
                 if not missing_tests.empty:
-                    error_message += f"{len(missing_tests)} test(s) could not be identified: [{", ".join(missing_tests_list)}]. "
+                    error_message += f"{len(missing_tests)} test(s) could not be identified: [{', '.join(missing_tests_list)}]. "
                 error_message += "No data has been uploaded. Please check that the sample names and test names match existing names in the database and try again."
 
                 messages.add_message(request, messages.ERROR, error_message)
