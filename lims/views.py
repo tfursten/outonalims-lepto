@@ -296,7 +296,7 @@ def select_event_view(request):
     return render(request, "lims/select_event.html", {"form": form})
 
 # ============== SUBJECTS ===============================
-class SubjectListView(LoginRequiredMixin, ListView):
+class SubjectListView(SubjectPermissionsMixin, ListView):
     template_name = "lims/subject_list.html"
     model = Subject
     context_object_name = 'subject_list'
@@ -304,7 +304,7 @@ class SubjectListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return None
 
-class SubjectFormView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+class SubjectFormView(SuccessMessageMixin, SubjectPermissionsMixin, CreateView):
     model = Subject
     template_name_suffix = '_new'
     form_class = SubjectForm
@@ -315,11 +315,11 @@ class SubjectFormView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
         return reverse('lims:subject_detail', args=(self.object.id,))
 
 
-class SubjectDetailView(LoginRequiredMixin, DetailView):
+class SubjectDetailView(SubjectPermissionsMixin, DetailView):
     model = Subject
 
 
-class SubjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+class SubjectUpdateView(SuccessMessageMixin, SubjectPermissionsMixin, UpdateView):
     model = Subject
     template_name_suffix = '_update'
     form_class = SubjectForm
@@ -328,7 +328,7 @@ class SubjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
         return reverse('lims:subject_detail', args=(self.object.id,))
     
 
-class SubjectDeleteView(LoginRequiredMixin, DeleteView):
+class SubjectDeleteView(SubjectPermissionsMixin, DeleteView):
     model = Subject
     success_url = reverse_lazy('lims:subject_list', args=())
 
