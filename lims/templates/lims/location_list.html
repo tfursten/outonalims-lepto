@@ -18,9 +18,8 @@
                 <th>Location Name</th>
                 <th>Neighborhood</th>
                 <th>Address</th>
-                <th>Contact Name</th>
-                <th>Email</th>
-                <th>Phone</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
                 <th>Consent</th>
   
             </tr>
@@ -39,9 +38,8 @@
                     <td>None</td>
                     {% endif %}
                     <td>{{ location.address }}</td>
-                    <td>{{ location.contact_name }}</td>
-                    <td>{{ location.contact_email }}</td>
-                    <td>{{ location.contact_phone }}</td>
+                    <td>{{ location.latitude }}</td>
+                    <td>{{ location.longitude }}</td>
                     {% if location.consent_status == 'Consented' %}
                     <td><span class="badge bg-success">{{ location.consent_status }}</span></td>
                     {% elif location.consent_status == "Inactive" %}
