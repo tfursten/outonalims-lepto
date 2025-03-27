@@ -173,9 +173,9 @@ class FixIDS(forms.Form):
     sample_id = forms.CharField(
         label="Sample ID", max_length=10,
         help_text="Enter sample ID to correct", required=False)
-    subject_id = forms.CharField(
-        label="Subject ID", max_length=10,
-        help_text="Enter subject ID to correct", required=False)
+    # subject_id = forms.CharField(
+    #     label="Subject ID", max_length=10,
+    #     help_text="Enter subject ID to correct", required=False)
 
 
 class LabelForm(ModelForm):

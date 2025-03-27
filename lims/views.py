@@ -17,12 +17,13 @@ from django.views.generic import (
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import ProtectedError, Count, Q, Max, Min
+
 from django.db import transaction
 
 from import_export import resources
 
 from ajax_datatable.views import AjaxDatatableView
-# from cualid import create_ids
+from cualid import create_ids
 
 import reportlab
 from reportlab.lib.pagesizes import (LETTER, A4)
@@ -47,7 +48,7 @@ from .forms import (
     SequenceForm, SelectEventForm, ResidentSurveyForm, AnimalSurveyForm, HouseSurveyForm,  EventSelectionForm)
 
 
-# from difflib import get_close_matches
+from difflib import get_close_matches
 # Create your views here.
 class SamplePermissionsMixin(AccessMixin):
     def dispatch(self, request, *args, **kwargs):
@@ -114,13 +115,13 @@ def fix_ids(request):
             sample_id = request.POST.get('sample_id')
             subject_id = request.POST.get('subject_id')
             existing_sample_ids = [s.name for s in Sample.objects.all()]
-            existing_subject_ids = [s.subject_ui for s in Subject.objects.all()]
+            # existing_subject_ids = [s.subject_ui for s in Subject.objects.all()]
             fixed_sample = fix_cualid_function(existing_sample_ids, sample_id)
-            fixed_subject = fix_cualid_function(existing_subject_ids, subject_id)
+            # fixed_subject = fix_cualid_function(existing_subject_ids, subject_id)
             return render(request, 'lims/fix_ids.html', {
                 'form': form,
                 'fixed_sample': fixed_sample,
-                'fixed_subject': fixed_subject})
+                'fixed_subject': None})
             
     return render(request, 'lims/fix_ids.html', {'form': form})
 
@@ -644,58 +645,7 @@ def sample_list_json_view(request):
     return JsonResponse(data, safe=False)
 
 
-# ============== SAMPLE RESULTS ================================
 
-class SampleResultListView(SamplePermissionsMixin, ListView):
-    template_name_suffix = "_list"
-    context_object_name = 'result_list'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        sample_results = SampleResult.objects.all().values(
-        'id', 'sample__collection_event__name', 'sample__collection_event__id',
-        'sample__collection_event__location__id', 'sample__collection_event__location__name',
-        'test__name', 'test__id', 'sample__id', 'sample__name',
-        'sample__sample_type', 'sample__source', 'result', 'value',
-        'notes', 'created_on')
-
-        context['data'] = json.dumps(
-            list(sample_results), cls=DjangoJSONEncoder)
-        return context
-
-    def get_queryset(self):
-        """
-        Return all results
-        """
-        return SampleResult.objects.all()
-    
-class SampleResultFormView(SuccessMessageMixin, SamplePermissionsMixin, CreateView):
-    model = SampleResult
-    template_name_suffix = '_new'
-    form_class = SampleResultForm
-    success_message = "Sample result was successfully added"
-
-    def get_success_url(self):
-        return reverse('lims:sample_result_detail', args=(self.object.id,))
-    
-
-class SampleResultSampleFormView(SuccessMessageMixin, SamplePermissionsMixin, CreateView):
-    model = SampleResult
-    template_name_suffix = '_sample_new'
-    form_class = SampleResultForm
-    success_message = "Sample result was successfully added"
-
-    def get_success_url(self):
-        return reverse('lims:sample_result_detail', args=(self.object.id,))
-
-    def get_form_kwargs(self):
-        kwargs = super(SampleResultSampleFormView, self).get_form_kwargs()
-        kwargs['sample'] = self.kwargs['pk']
-        return kwargs
-    
-    def get_success_url(self):
-        return reverse('lims:sample_result_detail', args=(self.object.id,))
-        
 
 @login_required
 def sample_excel_sheet(request, pk):
@@ -1151,71 +1101,6 @@ def upload_sample_result_file(request):
     return render(request, 'lims/sampleresult_upload.html', {'form': form})
 
 
-# @login_required   
-# def upload_sample_result_file(request):
-#     if request.method == 'POST':
-#         form = SampleResultUploadFileForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             researcher = request.POST.get('researcher')
-#             meta = pd.read_excel(
-#                 request.FILES['file'],
-#                 nrows=22,
-#                 header=None, names=['key', 'value'])
-#             print(meta)
-#             data = pd.read_excel(
-#                 request.FILES['file'],
-#                 skiprows=23,
-#                 usecols=["Sample", "Dye", "Target", "Cq"], dtype=str)
-#             data['id'] = data.index
-#             data['Sample'] = data['Sample'].apply(lambda x: x.split("_", 1)[0] if Sample.objects.filter(name=x.split("_", 1)[0]).exists() else "Not Found")
-#             data['Test'] = data['Target'].apply(lambda x: x if Test.objects.filter(name=x).exists() else "Not Found")
-#             data['Status'] = data['Cq'].apply(lambda x: "Positive" if x.lower() != "undetermined" else "Negative")
-#             data['Value'] = data['Cq']
-#             changes = []
-
-#             for n, row in data.iterrows():
-#                 if "Not Found" in row.values:
-#                     changes.append("Not Added")
-#                     continue
-#                 sample = Sample.objects.get(name=row.Sample)
-#                 test = Test.objects.get(name=row.Test)
-#                 sample_result, created = SampleResult.objects.create(
-#                     sample=sample, test=test,
-#                 )
-#                 sample_result.result = row.Status
-#                 sample_result.value = row.Value
-#                 if researcher:
-#                     sample_result.researcher.set(researcher)
-#                 sample_result.save()
-#                 changes.append("Created" if created else "Updated")
-            
-#             data['Changes'] = changes
-#             data.Changes = pd.Categorical(data.Changes, 
-#                       categories=["Not Added", "Created"],
-#                       ordered=True)
-#             data = data[['id', 'Sample', 'Test', 'Status', 'Value', 'Changes']]
-#             data = data.sort_values('Changes')
-#             if "Not Added" in data.Changes.values:
-                
-#                 messages.add_message(
-#                     request,
-#                     messages.WARNING,
-#                     '{} records could not be added. Please check and resubmit.'.format(
-#                         data.Changes.value_counts()['Not Added']
-#                     ))
-            
-#             data = data.to_json(orient="records")
-            
-#             return render(
-#                 request,
-#                 'lims/sampleresult_upload_complete.html',
-#                 {'data': data})
-#     else:
-#         form = SampleResultUploadFileForm()
-#     return render(request, 'lims/sampleresult_upload.html', {'form': form})
-
-
-
 
 class SampleResultSampleFormView(SuccessMessageMixin, SamplePermissionsMixin, CreateView):
     model = SampleResult
@@ -1234,7 +1119,6 @@ class SampleResultSampleFormView(SuccessMessageMixin, SamplePermissionsMixin, Cr
     def get_success_url(self):
         return reverse('lims:sample_result_detail', args=(self.object.id,))
         
-
 
 class SampleResultDetailView(SamplePermissionsMixin, DetailView):
     model = SampleResult
@@ -1325,17 +1209,74 @@ def sampleresults_table_update_view(request):
         return JsonResponse(json_response)
 
 
-# ============== SEQUENCING =================================
+class SampleSummaryDataView(LoginRequiredMixin, ListView):
+    """View to retrieve all sample data with aggregated test results."""
+    template_name = "lims/sample_summary_list.html"
+    context_object_name = "sample_list"
+    model = Sample
 
-class SequenceListView(LoginRequiredMixin, ListView):
-    template_name_suffix = "_list"
-    context_object_name = 'sequence_list'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-    def get_queryset(self):
-        """
-        Return all tests
-        """
-        return Sequencing.objects.all()
+        # Fetch all sample data
+        samples = Sample.objects.select_related(
+            "collection_event",
+            "collection_event__location",
+            "collection_event__location__neighborhood",
+        ).values(
+            "id", "name",
+            "collection_event__name",
+            "collection_event__start_date", "collection_event__end_date",
+            "collection_event__location__name",
+            "collection_event__location__latitude", "collection_event__location__longitude",
+            "collection_event__location__neighborhood__name",
+            "collection_status", "sample_type", "source"
+        )
+
+        # Fetch test result data & aggregate per sample
+        sample_results = SampleResult.objects.values(
+            "sample__name", "test__name"
+        ).annotate(
+            total_results=Count("id"),
+            total_positive=Count("id", filter=Q(result="Positive"))
+        )
+
+        # Convert to Pandas DataFrames
+        df_samples = pd.DataFrame.from_records(samples)
+        df_results = pd.DataFrame.from_records(sample_results)
+        # print(df_samples)
+        # print(df_results)
+
+
+        if not df_results.empty:
+            # Pivot to get one row per sample with multiple test columns
+            df_results_pivot = df_results.pivot_table(
+                index="sample__name",
+                columns="test__name",
+                values=["total_results", "total_positive"],
+                aggfunc="sum",
+                fill_value=0
+            )
+            df_results_pivot.columns = [f"{col[1]}_{col[0]}" for col in df_results_pivot.columns]
+            df_results_pivot.reset_index(inplace=True)
+
+            # Merge aggregated test results with sample data
+            df_samples = df_samples.merge(df_results_pivot, left_on="name", right_on="sample__name", how="left")
+        # Calculate total tested and total positives
+        test_cols = [col for col in df_samples.columns if col.endswith("_total_results")]
+        positive_cols = [col for col in df_samples.columns if col.endswith("_total_positive")]
+        df_samples["total_tested"] = df_samples[test_cols].sum(axis=1, skipna=True)
+        df_samples["total_positive"] = df_samples[positive_cols].sum(axis=1, skipna=True)
+        print(df_samples)
+        # Convert DataFrame to JSON
+        sample_data = df_samples.to_dict(orient="records")
+
+        print(sample_data[0])
+
+        # Convert to JSON for passing to the template
+        context["data"] = json.dumps(sample_data, cls=DjangoJSONEncoder)
+    
+        return context
     
 
 # =============== SURVEY VIEWS =============================

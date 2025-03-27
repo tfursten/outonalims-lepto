@@ -56,7 +56,6 @@ urlpatterns = [
     path('event/detail/<str:event>/house-survey/<str:pk>/update/', views.HouseSurveyUpdateView.as_view(), name="house_survey_update"),
     path('event/detail/<str:event>/animal-survey/<str:pk>/update/', views.AnimalSurveyUpdateView.as_view(), name="animal_survey_update"),
     path('sample-box/', views.SampleBoxListView.as_view(), name="sample_box_list"),
-    path('sequencing/', views.SequenceListView.as_view(), name="sequence_list"),
     path('sample-result/', views.SampleResultListView.as_view(), name="sample_result_list"),
     path('labels/', views.LabelListView.as_view(), name="label_list"),
     path('labels/new/', views.LabelFormView.as_view(), name="new_label"),
@@ -84,6 +83,6 @@ urlpatterns = [
     path('subject/detail/<str:pk>/remove/', views.SubjectDeleteView.as_view(), name="delete_subject"),
     path('sample-result/new/', views.SampleResultFormView.as_view(), name="new_sample_result"),
     path('samples/detail/<str:pk>/result/new', views.SampleResultSampleFormView.as_view(), name="new_result_sample"),
-
+    path('summary/sample/table/', views.SampleSummaryDataView.as_view(), name="sample_summary_table"),
 
 ]

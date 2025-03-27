@@ -1,6 +1,6 @@
 from django.db import models
 from phone_field import PhoneField
-# from cualid import create_ids
+from cualid import create_ids
 import datetime
 
 # Create your models here.

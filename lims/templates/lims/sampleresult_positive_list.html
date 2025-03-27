@@ -1,0 +1,164 @@
+{% extends "lims/base.html" %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.8/css/rowReorder.dataTables.min.css"/>
+<link rel="stylesheet" type="text/css" source="{% static 'lims/data-tables/css/editor.dataTables.min.css' %}"/>
+<link rel="stylesheet" type="text/css" source="{% static 'lims/data-tables/css/editor.bootstrap5.min.css' %}"/>
+{% endblock head %}
+
+{% block content %}
+{% csrf_token %}
+<h1 class="border-bottom">Positive Sample Results</h1>
+    <div class="d-grid gap-2 d-md-block mt-2 mb-2">  
+
+    </div>
+    
+
+    <table id="result_table" class="display table table-hover"> 
+        <thead>
+            
+            <tr>
+                <th>Sample ID</th>
+                <th>Total Tests</th>
+                <th>Positive Tests</th>
+                <th>Positive Test Names</th>
+            </tr>
+        </thead>
+    </table>
+
+{% endblock content %}
+
+{% block js %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/fh-3.2.0/kt-2.6.4/r-2.2.9/rr-1.2.8/sb-1.2.2/sl-1.3.3/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/datetime/1.1.1/js/dataTables.dateTime.min.js"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/dataTables.editor.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/editor.bootstrap5.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'lims/data-tables/js/editor.dataTables.min.js' %}"></script>
+<script>
+
+ let editor; // use a global for the submit and return data rendering in the examples
+ $.ajaxSetup({
+    data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+ });
+ $(document).ready(function() {
+     let data = {{ data | safe }}
+     editor = new $.fn.dataTable.Editor( {
+         ajax: "{% url 'lims:sampleresults_table_update' %}",
+         table: "#result_table",
+         idSrc:  'id',
+      
+         fields: [ 
+            
+            {
+                label: "Sample ID",
+                name: "sample__name",
+                type: "readonly",
+            },
+
+            {
+                label: "No. Positive Results",
+                name: "positive_count",
+                type: "readonly"
+            },
+            {
+                label: "Positive Tests",
+                name: "positive_tests",
+                type: "readonly",
+            },
+            {
+                label: "Shipped",
+                name: "shipped_date",
+                type: "MM/DD/YYYY",
+            },
+
+         ]
+     } );
+    
+
+
+
+    var sample_status = {
+        Positive: "success",
+        Negative: "warning",
+        Pending: "secondary",
+        Undetermined: "primary",
+    }
+    $('#result_table').DataTable({
+    rowReorder: false,
+    fixedHeader: true,
+    stateSave: true,
+    processing: true,
+    serverSide: false,  // Set to true if using server-side processing
+    searching: true,
+    search: {
+        "smart": true,  
+        "caseInsensitive": true
+    },
+    rowId: function(a) {
+            return a.id;
+        },
+    data: data,
+    order: [],
+    aLengthMenu: [
+            [25, 50, 100, 200, -1],
+            [25, 50, 100, 200, "All"]
+            ],
+    iDisplayLength: 25,
+    autoWidth: true,
+    dom: 'B<"clear">lfrtip',
+    columns: [
+            
+            { 
+              data: "sample__name",
+              render: function ( data, type, row ) {
+                let str = '<a class="table-link" href="{% url 'lims:sample_detail' 1 %}">' + data + '</a>'
+                let newstr = str.replace("1", row.sample__id)
+                return newstr
+            }},
+            { data: "positive_count"},
+            { data: "positive_tests"},
+            { data: "shipped_date",
+                type: "datetime",
+                render: function (data, type, row) {//data
+                    return moment(row.shipping_date).format('MM/DD/YYYY');
+                }
+            }
+            
+   
+        ],
+    select: {
+        style: 'multi+shift',
+    },
+    buttons: {
+        name: 'primary',
+        buttons: [ 
+        {
+          extend: 'copy',
+          title: 'Sample Result List'
+        },
+        {
+          extend: 'pdf',
+          title: 'Sample Result List'
+        },
+        {
+          extend: 'csv',
+          title: 'Sample Result List'
+        },
+        {
+          extend: 'excel',
+          title: 'Sample Result List'
+        },
+        { extend: "edit",   editor: editor }]
+
+        }}
+    );
+} );
+</script>
+{% endblock js %}
