@@ -4,7 +4,11 @@
     <h1 class="card-header">Event: {{ event.name }}</h1>
     <div class="card-body">
     <ul class="list-group" list-group-flush">
+      {% if event.location.neighborhood %}
       <li class="list-group-item"><Strong>Neighborhood: </Strong><a href="{% url 'lims:neighborhood_detail' event.location.neighborhood.id %}">{{ event.location.neighborhood.name }}</a></li>
+      {% else %}
+      <li class="list-group-item"><Strong>Neighborhood: </Strong>None</li>
+      {% endif %}
       <li class="list-group-item"><Strong>Location: </Strong><a href="{% url 'lims:location_detail' event.location.id %}">{{ event.location.name }}</a></li>
       {% if event.is_complete %}
       <li class="list-group-item"><Strong>Status: </Strong><span class="badge bg-success">Complete</span></li>
