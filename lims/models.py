@@ -337,6 +337,7 @@ class Sample(models.Model):
         ('Cow', 'Cow'),
         ('Donkey', 'Donkey'),
         ('Pig', 'Pig'),
+        ('Snake', 'Snake'),
         ('Environment', 'Environment')
     ]
 
